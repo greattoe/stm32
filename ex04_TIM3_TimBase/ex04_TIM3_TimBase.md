@@ -455,10 +455,4 @@ void assert_failed(uint8_t *file, uint32_t line)
 
 에러없이 빌드되었으면, RUN 메뉴에서 RUN 항목을 선택하여 실행한다. 
 
-적당한 시리얼 통신 터미널 에뮬레이터(putty, TERATERM, Arduino IDE 등)를 실행하여 결과를 확인한다.  
-
-![](./img/putty.png)
-
-
-
-![](./img/arduino.png)
+타겟 보드의 Green LED가 1초 점등, 1초 소등을 반복하는 것을 확인한다.
