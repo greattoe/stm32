@@ -132,7 +132,6 @@ PUTCHAR_PROTOTYPE
 
 ```c
 /* USER CODE BEGIN WHILE */
-  while (1)
   {
     /* USER CODE END WHILE */
 ```
@@ -140,23 +139,44 @@ PUTCHAR_PROTOTYPE
 
 
 ```c
-USER CODE BEGIN WHILE */
-  
-  /* start calibration */
-  if(HAL_ADCEx_Calibration_Start(hadc1) != HAL_OK)
-  {
-	  Error_Handler();
-  }
-	  
+/* USER CODE BEGIN WHILE */
+
+  /* Start calibration */
+  if (HAL_ADCEx_Calibration_Start (&hadc1) != HAL_OK)
+    {
+      Error_Handler ();
+    }
+
+  /* Start the conversion process */
+  if (HAL_ADC_Start (&hadc1) != HAL_OK)
+    {
+      Error_Handler ();
+    }
+
+  uint16_t adc1;
+
+  float vSense; // sensor's output voltage [V]
+  float temp;   // sensor's temperature [°C]
+
   while (1)
   {
-	  /* start calibration */
-	  if(HAL_ADC_Start(hadc1) = HAL_OK)
-	  {
-		  Error_Handler();
-	  }
-  }
-	  /* USER CODE END WHILE */
+      HAL_ADC_PollForConversion (&hadc1, 100);
+      adc1 = HAL_ADC_GetValue (&hadc1);
+      //printf ("ADC1_temperature: %d \n", adc1);
+
+      /*
+       * Reference Manual & Datasheet
+       *
+       * Temperature (in °C) = {(V25 - VSENSE) / Avg_Slope} + 25.
+       * Where,
+       * V25 = VSENSE value for 25°C and
+       * Avg_Slope = Average Slope for curve between Temperature vs. VSENSE
+       * (given in mV/°C or uV/°C)
+       */
+      vSense = adc1 * ADC_TO_VOLT;
+      temp = (V25 - vSense) / AVG_SLOPE + 25.0;
+      printf ("temperature: %d, %f \n", adc1, (int)temp-15);
+      /* USER CODE END WHILE */
 ```
 
 다음은 편집이 완료된 `main.c`의 전체 코드이다.
