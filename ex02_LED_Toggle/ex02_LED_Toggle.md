@@ -1,6 +1,6 @@
 ### LED_Toggle
 
-SW 입력에 의한 LED On/Off 토글 구현
+GPIO 입력에 의한 LED On/Off 토글 구현
 
 #### 개발환경
 
@@ -9,6 +9,10 @@ SW 입력에 의한 LED On/Off 토글 구현
 **Target** STM32 NUCLEO F103RB
 
 **IDE** STM32 Cube IDE
+
+**참고문헌** STM32CubeIDE를 이용한 STM32 따라하기(주)북랩 김남수 ∙ 이진형 지음 
+
+
 
 #### 프로젝트 생성
 
@@ -653,3 +657,5 @@ Project 메뉴의 Build Project를 선택하여 빌드한다.
 에러없이 빌드되었으면, RUN 메뉴에서 RUN 항목을 선택하여 실행한다. 
 
 타겟보드의 녹색 LED가 0.5초 간격으로 점멸하는 것을 확인한다.
+
+[**목차**](../README.md) 

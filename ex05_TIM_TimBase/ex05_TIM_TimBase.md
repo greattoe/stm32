@@ -8,6 +8,8 @@
 
 **IDE** STM32 Cube IDE
 
+**참고문헌** STM32CubeIDE를 이용한 STM32 따라하기(주)북랩 김남수 ∙ 이진형 지음 
+
 #### 프로젝트 생성
 
 **STM32CubeIDE** 실행 후, 아래와 같이 File - New - STM32 Project 선택 
@@ -26,7 +28,7 @@ Board selector 탭의 Type에서 NUCLEO64를 체크, MCU/MPU Series에서 STM32F
 
 ![](./img/board_type.png)
 
-STM32 Project 창이 나타나면 Project Name: 에 적당한 프로젝트 이름을 입력 후(예: uart_printf) Finish 버튼을 클릭한다. 
+STM32 Project 창이 나타나면 Project Name: 에 적당한 프로젝트명을 입력 후, Finish 버튼을 클릭한다. 
 
 ![](./img/stm32_project.png)
 
@@ -54,49 +56,61 @@ Open Associated Perspective 대화창에서 Yes 버튼을 클릭하면 Device Co
 
 RCC 설정을 위해 다음 그림과 같이 Device Configuration 창에서 Pinout & Configuration 탭의 System Core 항목 중 RCC를 선택 후 우측의 RCC Mode snd Configuration 의 Mode를 High Speed Clock(HSE), Low Speed Clock(LSE) 모두 Disable로 변경한다.
 
-![](C:\Dropbox\myDoc\_강의자료\stm32\img\system_core_rcc.png)
-
-- **USART2 설정**
-
-  NUCLEO-F103RB 타겟보드는 3개의 USART(USART1, USART2, USART3)가 지원된다. 그 중 USB 포트에 바로 연결된 장치가 USART2이므로 USART2 장치를 표준 출력장치로 설정하여 printf() 함수로 출력한 내용이 시리얼로 출력되도록 하기위해 Device Configuration 창에서 Pinout & Configuration 탭의 Conectivity 항목 중 USART2를 선택 후 우측의 USART Mode snd Configuration 의 Mode를 Asynchronous로, Hardware Flow Control(RS232)을 Disable로 변경한다. 
-
-  ![](./img/usart2_mode_config.png)
-
-USART2 Parameter Setting
-
-앞서 설정한 USART2 Mode 항목 아래에 Configuration 항목의 Parameter Settings 탭을 선택하고 
-
-**Baud Rate** - 115200, **World Length** : 8bit, **Parity** : None, **Stop Bits** : 1, **Data Direction** : Recieve and Transmit 등의 설정값을 확인
-
-한다.
-
-![](./img/usart2_ParameterSettings.png)
+![](./img/system_core_rcc.png)
 
 
 
-NVIC Settings 탭을 선택하고, USART2 Global Interrupt항목의 Enabled를 체크한다.
+![](./img/usart2_mode_config.png)
 
-![](./img/usart2_nvic_config.png)
+TIM3 타이머 설정
+
+Pinout & Configuration 탭의 Timers 에서 TIM3를 선택 후, xtim3 Mode and Configuration의 Mode 항목 중 Clock Source를 Internal Clock으로 변경하면 하단 Configuration이 활성화 된다.
+
+![](./img/tim3_mode_n_config.png)
+
+TIM3의 Parameters를 설정하기 전 Clock and Configuration 탭에서 타이머에 공급되는 클럭을 확인해 두자. 64(MHz)임을 확인 할 수 있다. 
+
+![](./img/clock_config.png)
+
+Configuration 항목의 Parameter Settings 탭을 선택 후, Parameter를 Setting한다. 이 때 Prescaler와 Counter Period 설정값에 의해 타이머 인터럽트의 발생 주기가 결정되므로 주의가 필요하다. Clock Configuration 탭에서 타이머에 공급되는 클럭이 64MHz임을 확인할 수 있다. 이 클럭은 Prescaler에 의해 분주되어 타이머에 공급된다. 64MHz는 64,000,000Hz 인데 Prescaler Parameter를 64로 설정한다면, 타이머에는 64,000,000 / 64 = 1,000,000 Hz의 클럭이 공급된다. 이 때 타이머는 카운터로 동작하며, 입력되는 클럭을 카운트한다. 1초에 1,000,000개의 클럭이 입력되므로, 클럭 1개를 카운트 하는 데에 1/1,000,000초가 소요된다. 이 때 Counter Periode Parameter로 1,000을 설정한다면 클럭을 1,000번 카운트 할 때 마다 타이머 인터럽트를 발생시키게 된다. 따라서 이 때의 인터럽트 주기는 1/1,000,000초 × 1,000 = 1/1,000 초, 즉 1(ms)가된다. 1초가 필요하다면, 인터럽트가 1,000회 발생할 때마다 처리하면된다.
+
+이제 TIM3 타이머의 Parameter들을 설정해보자.
+
+Prescaler값이 64 라는 것은 64개의 클럭이 입력될 때마다 1개의 클럭을 출력한다는 의미이다. 카운트를 1부터 시작한다면 64개의 클럭이 입력됬을 때의 카운트 값은 64 이겠지만, 컴퓨터는 0부터 카운트를 시작하므로 64개의 클럭이 입력됬을 때의 카운트 값은 63이된다. 따라서 Prescaler는 `64-1`로 설정하고, 같은 이유로 Counter Period는 `1000-1`로 설정한다.
+
+![](./img/tim3_parameters.png)
+
+TIM3 Configuration의 NVIC Setting 탭에서 TIM3 global interrupt Enabled에 체크.
+
+![](./img/tim3_nvic_int_table.png)
 
 
 
-System Core 항목에서 NVIC을 선택하고, USART2 Global Interrupt 항목의 체크를 해제한다.
+System Core 항목에서 NVIC을 선택하고, Configuration 의 NVIC탭에 NVIC Interrupt Table에 TIM3global interript가 등록되었는 지 확인한다.
+
+
+
+![](./img/nvic_config_tim3_global_int.png)
+
+
+
+
 
 ![](./img/usart2_nvic_config2.png)
 
-지금까지의 설정을 반영한 코드 생성
-
-
-
-Project - Generate Code
+지금까지의 설정을 반영한 코드 생성하기 위해 Project 메뉴의 Generate Code 메뉴를 선택한다. 
 
 ![](./img\generate_code.png)
 
+`main.c`의 다음코드를 (46~48행)
 
+```c
+/* USER CODE BEGIN PV */
 
+/* USER CODE END PV */
+```
 
-
-
+아래와 같이 변경한다.
 
 ```c
 /* USER CODE BEGIN PV */
@@ -105,9 +119,15 @@ volatile int led_state = 0;
 /* USER CODE END PV */
 ```
 
+`main.c`의 다음코드를 (94~96행)
 
+```c
+/* USER CODE BEGIN 2 */
 
+/* USER CODE END 2 */
+```
 
+아래와 같이 변경한다. 
 
 ```c
 /* USER CODE BEGIN 2 */
@@ -115,6 +135,14 @@ volatile int led_state = 0;
 	  Error_Handler();
   }
   /* USER CODE END 2 */
+```
+
+`main.c`의 다음코드를 (262~264행)
+
+```c
+/* USER CODE BEGIN 4 */
+
+/* USER CODE END 4 */
 ```
 
 
@@ -135,7 +163,7 @@ HAL_TIM_PeriodElapsedCallback (TIM_HandleTypeDef *htim)
 /* USER CODE END 4 */
 ```
 
-다음은 편집이 완료된 `main.c` 전체 코드이다.
+다음은 편집이 완료된 `main.c`의 전체 코드이다.
 
 ```c
 /* USER CODE BEGIN Header */
@@ -456,3 +484,5 @@ void assert_failed(uint8_t *file, uint32_t line)
 에러없이 빌드되었으면, RUN 메뉴에서 RUN 항목을 선택하여 실행한다. 
 
 타겟 보드의 Green LED가 1초 점등, 1초 소등을 반복하는 것을 확인한다.
+
+[**목차**](../README.md) 

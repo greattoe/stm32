@@ -8,6 +8,8 @@
 
 **IDE** STM32 Cube IDE
 
+**참고문헌** STM32CubeIDE를 이용한 STM32 따라하기(주)북랩 김남수 ∙ 이진형 지음 
+
 #### 프로젝트 생성
 
 **STM32CubeIDE** 실행 후, 아래와 같이 File - New - STM32 Project 선택 
@@ -717,6 +719,8 @@ void assert_failed(uint8_t *file, uint32_t line)
 
 ![](./img/putty.png)
 
-
+[**목차**](../README.md) 
 
 ![](./img/arduino.png)
+
+[**목차**](../README.md) 

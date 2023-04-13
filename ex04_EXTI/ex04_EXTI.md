@@ -1,6 +1,4 @@
-### LED_Blink
-
-GPIO 출력 기능을 이용한 LED 제어
+### External Interrupt
 
 #### 개발환경
 
@@ -30,9 +28,9 @@ Board selector 탭의 Type에서 NUCLEO64를 체크, MCU/MPU Series에서 STM32F
 
 ![](./img/board_type.png)
 
-STM32 Project 창이 나타나면 Project Name: 에 적당한 프로젝트 이름을 입력 후(예: LED_Blink) Finish 버튼을 클릭한다. 
+STM32 Project 창이 나타나면 Project Name: 에 적당한 프로젝트 이름을 입력 후(예: uart_printf) Finish 버튼을 클릭한다. 
 
-![](./img/stm32_project_name.png)
+![](./img/stm32_project.png)
 
 Board Project Options 대화창에서 Yes 버튼을 클릭한다.
 
@@ -56,39 +54,91 @@ Open Associated Perspective 대화창에서 Yes 버튼을 클릭하면 Device Co
 
 - **RCC 설정**
 
-RCC 설정을 위해 다음 그림과 같이 Device Configuration 창에서 Pinout & Configuration 탭의 System Core 항목 중 RCC를 선택 후 우측의 RCC Mode and Configuration 의 Mode의 High Speed Clock(HSE), Low Speed Clock(LSE) 모두 Disable로 변경한다.
+RCC 설정을 위해 다음 그림과 같이 Device Configuration 창에서 Pinout & Configuration 탭의 System Core 항목 중 RCC를 선택 후 우측의 RCC Mode snd Configuration 의 Mode를 High Speed Clock(HSE), Low Speed Clock(LSE) 모두 Disable로 변경한다.
 
 ![](./img/system_core_rcc.png)
 
+- **PC13 핀의 GPIO Mode설정**
 
+  NUCLEO-F103RB 타겟보드의 파란색 온보드 푸시버튼 SW는 PC13 핀에 연결되어있다. 이 SW 입력에 의한 인터럽트를 발생시키기 위해 System-Core GPIO의 PC13 Configuration을 Interrupt Mode with Rising Edge triger Detection에서 Interrupt Mode with Falling Edge triger Detection으로 변경한다. 
 
-- **GPIO 설정**
+  ![](./img/pc13_gpio_mode.png)
 
-  GPIO 설정을 위해 다음 그림과 같이 Device Configuration 창에서 Pinou 탭의 CPU Pin 중 PA5를 GPIO_OUTPUT로 변경후, Pinout & Configuration 탭의 PA5 Configuration의 GPIO Mode가 Output Push Pull인지 확인한다.
+GPIO Configuration의 NVIC 탭에서 NVIC Interrupt Table항목의 EXT line[15:10] interrupts Enabled 체크
 
-  
-  
-  ![](./img/gpio_config.png)
+![](./img/gpio_nvic_exti_linw_15_10.png)
 
-Clock Configuration 탭에서 HCLK가 64(MHz)로 설정되었는 지 확인한다.
+NVIC Configuration의 Code Generation 탭의 EXTI line[15:10]항목의 Generate IRQ Handler 및 Call HAL handler에 체크.
 
-![](./img/clock_config.png)
+지금까지 설정을 반영한 코드 생성을 위해 **Project** 메뉴의 **Generate Code**를 선택한다.
 
-
-
-
-
-지금까지의 설정을 반영한 코드 생성을 위해 Project 메뉴의 Generate Code 항목을 선택한다. 
-
-Open Associated Perspective 대화창에서 Yes 버튼을 클릭한다. 
+Open_Associated_Perspective? 대화창에서 Yes를 클릭한다.
 
 ![](./img/open_associated_perspective.png)
 
+STM32CubeIDE 화면 우측 상단의 프로젝트 탐색기에서 04_EXTI - Core - Src - `stm32f1xx_it.c`파일을 열면 204~213행에 걸쳐 `EXTI15_10_IRQHandler(void)`가 생성된 것을 확인한다. 
+
+![](./img/EXTI15_10_IRQHandler.png)
 
 
 
+209행의 `HAL_GPIO_EXTI_IRQHandler`함수명 위에 마우스 오른쪽 버튼을 클릭하여 팝업 메뉴에서 Open Declaration 메뉴를 선택하면 `stm32f1xx_hal_gpio.c`파일이 열리면서 HAL_GPIO_EXTI_IRQHandler() 함수를 확인할 수 있다. 
 
-다음 코드는 Project 메뉴의 Generate Code 실행하여 생성된 main.c 의 내용이다.
+![](./img/open_declaration.png)
+
+```c
+/**
+  * @brief  This function handles EXTI interrupt request.
+  * @param  GPIO_Pin: Specifies the pins connected EXTI line
+  * @retval None
+  */
+void HAL_GPIO_EXTI_IRQHandler(uint16_t GPIO_Pin)
+{
+  /* EXTI line interrupt detected */
+  if (__HAL_GPIO_EXTI_GET_IT(GPIO_Pin) != 0x00u)
+  {
+    __HAL_GPIO_EXTI_CLEAR_IT(GPIO_Pin);
+    HAL_GPIO_EXTI_Callback(GPIO_Pin);
+  }
+}
+
+/**
+  * @brief  EXTI line detection callbacks.
+  * @param  GPIO_Pin: Specifies the pins connected EXTI line
+  * @retval None
+```
+
+
+
+인터럽트관련 사용자코드는 `HAL_GPIO_EXTI_Callback()` 함수에 구현하면 된다. 예를 들자면   `main.c`의 213~215 행의 다음 코드를
+
+```c
+/* USER CODE BEGIN 4 */
+
+/* USER CODE END 4 */
+```
+
+아래와 같이 수정하여 사용한다. 
+
+```c
+ /* USER CODE BEGIN 4 */
+HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	switch(GPIO_Pin)
+	{
+	case B1_Pin:
+    	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+    	break;
+    default:
+    	;
+	}
+}
+/* USER CODE END 4 */
+```
+
+
+
+Project메뉴의 Build Project메뉴를 선택하여 빌드한 후에, Run 메뉴의 Run항목을 선택하여 타겟보드에 빌드결과를 업로드한 후 타겟보드의 파란색 푸시버튼 스위치를 누를 때 마다 초록색 LED가 ON / OFF 상태가 토글되는 가를 확인한다. 다음은 편집이 완료된 `main.c` 전체 코드이다.
 
 ```c
 /* USER CODE BEGIN Header */
@@ -304,7 +354,17 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	switch(GPIO_Pin)
+	{
+	case B1_Pin:
+    	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+    	break;
+    default:
+    	;
+	}
+}
 /* USER CODE END 4 */
 
 /**
@@ -339,48 +399,8 @@ void assert_failed(uint8_t *file, uint32_t line)
 }
 #endif /* USE_FULL_ASSERT */
 
-
 ```
 
 
-
-95 ~ 98행의 다음 코드를
-
-```c
-/* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    /* USER CODE END WHILE */
-```
-
-아래와 같이 수정한다.
-
-```c
-
-/* USER CODE BEGIN WHILE */
-  while (1)
-  {
-	  HAL_GPIO_WritePin (LD2_GPIO_Port, LD2_Pin, 1);
-	  HAL_Delay(500);
-	  HAL_GPIO_WritePin (LD2_GPIO_Port, LD2_Pin, 0);
-	  HAL_Delay(500);
-    /* USER CODE END WHILE */
-```
-
-다음은 편집이 완료된 `main.c` 전체 코드이다.
-
-```c
-ㅁ
-
-
-```
-
-Project 메뉴의 Build Project를 선택하여 빌드한다.
-
-![](./img/build_result.png)
-
-에러없이 빌드되었으면, RUN 메뉴에서 RUN 항목을 선택하여 실행한다. 
-
-타겟보드의 녹색 LED가 0.5초 간격으로 점멸하는 것을 확인한다.
 
 [**목차**](../README.md) 
