@@ -174,29 +174,11 @@ PUTCHAR_PROTOTYPE
     }
 
   uint16_t adc1;
-
-  float vSense; // sensor's output voltage [V]
-  float temp;   // sensor's temperature [°C]
-
   while (1)
-  {
-      HAL_ADC_PollForConversion (&hadc1, 100);
-      adc1 = HAL_ADC_GetValue (&hadc1);
-      //printf ("ADC1_temperature: %d \n", adc1);
-
-      /*
-       * Reference Manual & Datasheet
-       *
-       * Temperature (in °C) = {(V25 - VSENSE) / Avg_Slope} + 25.
-       * Where,
-       * V25 = VSENSE value for 25°C and
-       * Avg_Slope = Average Slope for curve between Temperature vs. VSENSE
-       * (given in mV/°C or uV/°C)
-       */
-      vSense = adc1 * ADC_TO_VOLT;
-      temp = (V25 - vSense) / AVG_SLOPE + 25.0;
-      printf ("temperature: %d, %d \n", adc1, (int)temp-15);
-      /* USER CODE END WHILE */
+  {HAL_ADC_PollForConversion (&hadc1, 100);
+  adc1 = HAL_ADC_GetValue (&hadc1);
+  printf ("ADC Result = %d \n", adc1);
+    /* USER CODE END WHILE */
 ```
 
 다음은 편집이 완료된 `main.c`의 전체 코드이다.
@@ -210,25 +192,23 @@ PUTCHAR_PROTOTYPE
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
-  * All rights reserved.</center></h2>
+  * Copyright (c) 2023 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
 /* USER CODE END Header */
-
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
-#include <stdio.h>
-/* USER CODE END Includes */
+/* USER CODE BEGIN 0 */
+
+/* USER CODE END 0 */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
@@ -251,10 +231,7 @@ ADC_HandleTypeDef hadc1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-const float AVG_SLOPE = 4.3E-03;      // slope (gradient) of temperature line function
-const float V25 = 1.43;               // sensor's voltage at 25°C [V]
-const float ADC_TO_VOLT = 3.3 / 4096; // conversion coefficient of digital value to volt
-                                      // when using 3.3V ref. voltage at 12-bit resolution
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -291,7 +268,6 @@ PUTCHAR_PROTOTYPE
 
   return ch;
 }
-
 /* USER CODE END 0 */
 
 /**
@@ -328,7 +304,7 @@ int main(void)
 
   /* USER CODE END 2 */
 
-  /* Infinite loop */
+
   /* USER CODE BEGIN WHILE */
 
   /* Start calibration */
@@ -344,33 +320,13 @@ int main(void)
     }
 
   uint16_t adc1;
-
-  float vSense; // sensor's output voltage [V]
-  float temp;   // sensor's temperature [°C]
-
   while (1)
-  {
-      HAL_ADC_PollForConversion (&hadc1, 100);
-      adc1 = HAL_ADC_GetValue (&hadc1);
-      //printf ("ADC1_temperature: %d \n", adc1);
+  {HAL_ADC_PollForConversion (&hadc1, 100);
+  adc1 = HAL_ADC_GetValue (&hadc1);
+  printf ("ADC Result = %d \n", adc1);
+    /* USER CODE END WHILE */
 
-      /*
-       * Reference Manual & Datasheet
-       *
-       * Temperature (in °C) = {(V25 - VSENSE) / Avg_Slope} + 25.
-       * Where,
-       * V25 = VSENSE value for 25°C and
-       * Avg_Slope = Average Slope for curve between Temperature vs. VSENSE
-       * (given in mV/°C or uV/°C)
-       */
-      vSense = adc1 * ADC_TO_VOLT;
-      temp = (V25 - vSense) / AVG_SLOPE + 25.0;
-      printf ("temperature: %d, %d \n", adc1, (int)temp-15);
-      /* USER CODE END WHILE */
-
-      /* USER CODE BEGIN 3 */
-      HAL_Delay (100);
-
+    /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
@@ -385,19 +341,21 @@ void SystemClock_Config(void)
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-  /** Initializes the CPU, AHB and APB busses clocks
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI_DIV2;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL16;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL2;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks
+
+  /** Initializes the CPU, AHB and APB buses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -406,12 +364,12 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
   {
     Error_Handler();
   }
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
-  PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV8;
+  PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV2;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
@@ -435,6 +393,7 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 1 */
 
   /* USER CODE END ADC1_Init 1 */
+
   /** Common config
   */
   hadc1.Instance = ADC1;
@@ -448,6 +407,7 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
+
   /** Configure Regular Channel
   */
   sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
@@ -504,6 +464,8 @@ static void MX_USART2_UART_Init(void)
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
+/* USER CODE BEGIN MX_GPIO_Init_1 */
+/* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -531,6 +493,8 @@ static void MX_GPIO_Init(void)
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
+/* USER CODE BEGIN MX_GPIO_Init_2 */
+/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
@@ -545,7 +509,10 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-
+  __disable_irq();
+  while (1)
+  {
+  }
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -561,10 +528,11 @@ void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
-     tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
+
 
 
 ```
