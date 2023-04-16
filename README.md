@@ -11,7 +11,8 @@ STM32CubeIDE 환경에서 NUCLEO-F103RB 보드를 타겟으로 MCU가 제공하�
 >4. [4. EXTI(GPIO 입력에 의한 인터럽트)](./ex04_EXTI/ex04_EXTI.md) 
 >5. [5. TIM_TimeBase(Timer 인터럽트)](./ex05_TIM_TimBase/ex05_TIM_TimBase.md) 
 >6. [6. ADC(Analog to Digital 컨버팅)](./ex06_ADC/ex06_ADC.md) 
->7. [7. PWM_Servo(PWM을 이용한 Servo 제어)](./ex7_PWM_Servo/ex7_PWM_Servo.md) 
+>7. [7. PWM_Servo (서보제어)](./ex8_PWM_Servo/ex8_PWM_Servo.md) 
+>8. [7. USART_rb(시리얼 수신)](./ex07_USART_rb/ex07_USART_rb.md) 
 
 ---
 
