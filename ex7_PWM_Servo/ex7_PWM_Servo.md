@@ -1,4 +1,6 @@
-### ADC 를 이용한 온도 측정
+### PWM을 이용한 서보 제어
+
+TIM4 타이머의 PWM 출력을 이용하여 서보 모터를 제어해 보자.
 
 #### 개발환경
 
@@ -58,77 +60,51 @@ RCC 설정을 위해 다음 그림과 같이 Device Configuration 창에서 Pino
 
 ![](./img/system_core_rcc.png)
 
-- **ADC1 설정**
+- **TIM4 설정**
 
-  Pinout & Configuration탭의 Analog의 하위항목 중 ADC1을 선택한다.  ADC1 Mode and Configuration의 Mode에서 Temperature Sensor Channel을 체크, Configuration의 Parameter Settings 탭에서 Mode 는 Independent mode, Data Alignment는 Right Alignment, Scan Conversion Mode는 Disabled, Continuous Conversion Mode는 Enabled, Discontinuous Coversion Mode는 Disabled, Enable Regular Coversions는 Enable, Number of Conversion은 1, Rank는 1, Enable Injected Conversions는 Disable로 설정하고. 
+  Pinout & Configuration탭의 Timers의 하위항목 중 Tim4를 선택한다.  ATim4 Mode and Configuration의 Mode에서 Internal Clock을 체크, Channel2를 PWM Generation CH2로 변경 후, 화면 우측의 PINout 탭에서 PB7 핀을 클릭하여 TIM4_CH2가 나타나는 지 확인한다. 
 
+  ![](./img/tim4_mode_n_config1.png)
+  
+  Tim4의 Congiguration의 arameter Settings 탭의 Prescaler,  Counter Period 설정에 앞서 Clock을 확인해야 한다. 
+  
+  STM32-F1xx 시리즈 MCU는 CPU와  다수의 peripheral 장치들로 이루어져 있으며, 이들은 ARMBA( Advanced Microcontroller Bus Architecture ) 버스로 연결되어 있다. 
+  
+  ARMBA( Advanced Microcontroller Bus Architecture ) 버스는 AHB(Advanced High Performance Bus), APB1(Advanced Peripheral Bus1 ), APB2( Advanced Peripheral Bus2 ) 의 3가지 BUS로 이루어지며, 다음은 각 Peripheral Device들이 어떤 버스에 연결되어 있는가를 보여주는  구성도이다. 
+  
+  ![](./img/stm32_f1xx_system_architecture.png)
   
   
-  ![](./img/adc_mode_n_config.png)
-
-`>`RANK 앞의 `<` 를 클릭하면 나타나는 Sampling Time은 13.5 Cycle 로 설정한다.  그리고 나서 클럭 설정 확인을 위해 Clock Configuration 탭을 클릭하면클럭 설정 문제와 자동 설정으로 해결하려면 원하는 버튼을 클릭하라는 대화창이 나타나는데, 여기서 YES 버튼을 클릭한다. 
-
-![](./img/auto_clock_issue_solver.png)
-
-지금까지 진행한 의 설정을 반영한 코드 생성하기 위해 Project 메뉴의 Generate Code 메뉴를 선택한다. 
+  
+  서보모터를 제어하기위한 PWM 파형을 TIM4 타이머의 PWM 출력 채널2를 통해 발생시키기 위해 TIM4가 연결된 APB1 버스에 공급되는 클럭 주파수를 확인해야한다.  Clock Configuration 탭을 선택한다.
+  
+  APB1 Timer Clock이 64(MHz)라는 것을 확인할 수 있다. ![](./img/tim4_clock_config.png)
+  
+  
+  
+  서보모터를 제어하기위해서는 주기가 20(ms) 즉 50(Hz)인 PWM 파형이 필요하다. Tim4 Mode and Configuration에서 Parameter Settings의 Prescaler와 Counter Period에 적절한 값을 설정하여 이를 맞춰줘야 한다. 
+  
+  Tim4에는 64(MHz) 클럭이 공급되는 것은 이미 확인 했다. 이 클럭은은 Prescaler에 의해 분주되어 타이머에 공급된다. 64(MHz)는 64,000,000Hz 인데 Prescaler Parameter를 1280으로 설정한다면, 타이머에는 64,000,000 / 1280 = 50,000(Hz)의 클럭이 공급된다. 이 때 타이머는 카운터로 동작하며, 입력되는 클럭을 카운트한다. 1초에 50,000개의 클럭이 입력되므로, 클럭 1개를 카운트 하는 데에 1/50,000초가 소요된다. 이 때 Counter Periode Parameter로 1,000을 설정한다면 클럭을 1,000번 카운트 할 때 마다 타이머 인터럽트를 발생시키게 된다. 따라서 이 때의 인터럽트 주기는 1/50,000초 × 1,000 = 1,000/50,000=1/50=2/100 초, 즉 20(ms)가 되어 서보모터를 제어하기위한 주기 20(ms)인 PWM 파형을 발생시킬 준비가 되었다. 
+  
+  이제 TIM3 타이머의 Parameter들을 설정해보자.
+  
+  Prescaler값이 1280 이라는 것은 1280개의 클럭이 입력될 때마다 1개의 클럭을 출력한다는 의미이다. 카운트를 1부터 시작한다면 1280개의 클럭이 입력됬을 때의 카운트 값은 1280 이겠지만, 컴퓨터는 0부터 카운트를 시작하므로 1280개의 클럭이 입력됬을 때의 카운트 값은 1281이된다. 따라서 Prescaler는 `1280-1`로 설정하고, 같은 이유로 Counter Period는 `1000-1`로 설정한다.
+  
+  ![](./img/tim4_mode_n_config2.png)
+  
+  
+  
+  ![](./img/tim4_mode_n_config3.png)
+  
+  
+  
+  
+  
+  
 
 ![](./img\generate_code.png)
 
-`printf()` 사용을 위해`main.c`의 다음코드를 
-
-```c
-/* /* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-```
-
-아래와 같이 변경한다.
-
-```c
-/* USER CODE BEGIN Includes */
-#include <stdio.h>
-/* USER CODE END Includes */
-```
-
-`printf()` 사용을 위해`main.c`의 다음코드를 
-
-```c
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
-```
-
-아래와 같이 변경한다. 
-
-```c
-/* USER CODE BEGIN 0 */
-#ifdef __GNUC__
-/* With GCC, small printf (option LD Linker->Libraries->Small printf
-   set to 'Yes') calls __io_putchar() */
-#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
-#else
-#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
-#endif /* __GNUC__ */
-
-/**
-  * @brief  Retargets the C library printf function to the USART.
-  * @param  None
-  * @retval None
-  */
-PUTCHAR_PROTOTYPE
-{
-  /* Place your implementation of fputc here */
-  /* e.g. write a character to the USART1 and Loop until the end of transmission */
-  if (ch == '\n')
-    HAL_UART_Transmit (&huart2, (uint8_t*) "\r", 1, 0xFFFF);
-  HAL_UART_Transmit (&huart2, (uint8_t*) &ch, 1, 0xFFFF);
-
-  return ch;
-}
-/* USER CODE END 0 */
-```
-
-`main.c`의 다음코드를 
+`printf()` 사용을 위해`main.c`의 다음코드를 `main.c`의 다음코드를 
 
 ```c
 /* USER CODE BEGIN WHILE */
@@ -140,77 +116,40 @@ PUTCHAR_PROTOTYPE
 
 ```c
 /* USER CODE BEGIN WHILE */
-
-  /* Start calibration */
-  if (HAL_ADCEx_Calibration_Start (&hadc1) != HAL_OK)
-    {
-      Error_Handler ();
-    }
-
-  /* Start the conversion process */
-  if (HAL_ADC_Start (&hadc1) != HAL_OK)
-    {
-      Error_Handler ();
-    }
-
-  uint16_t adc1;
-
-  float vSense; // sensor's output voltage [V]
-  float temp;   // sensor's temperature [°C]
-
+  HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_2);
   while (1)
   {
-      HAL_ADC_PollForConversion (&hadc1, 100);
-      adc1 = HAL_ADC_GetValue (&hadc1);
-      //printf ("ADC1_temperature: %d \n", adc1);
-
-      /*
-       * Reference Manual & Datasheet
-       *
-       * Temperature (in °C) = {(V25 - VSENSE) / Avg_Slope} + 25.
-       * Where,
-       * V25 = VSENSE value for 25°C and
-       * Avg_Slope = Average Slope for curve between Temperature vs. VSENSE
-       * (given in mV/°C or uV/°C)
-       */
-      vSense = adc1 * ADC_TO_VOLT;
-      temp = (V25 - vSense) / AVG_SLOPE + 25.0;
-      printf ("temperature: %d, %f \n", adc1, (int)temp-15);
-      /* USER CODE END WHILE */
+    /* USER CODE END WHILE */
 ```
+
+
+
+```c
+/* USER CODE BEGIN 3 */
+	  __HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_2, 25);
+	  HAL_Delay(2000);
+	  __HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_2, 125);
+	  HAL_Delay(2000);
+  }
+  /* USER CODE END 3 */
+```
+
+
 
 다음은 편집이 완료된 `main.c`의 전체 코드이다.
 
 ```c
 /* USER CODE BEGIN Header */
-/**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2023 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -219,31 +158,26 @@ PUTCHAR_PROTOTYPE
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim4;
 
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-volatile int count = 0;
-volatile int led_state = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
-static void MX_TIM3_Init(void);
+static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
 /* USER CODE END 0 */
 
 /**
@@ -253,7 +187,6 @@ static void MX_TIM3_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -262,32 +195,33 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
-  MX_TIM3_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-  if(HAL_TIM_Base_Start_IT(&htim3) != HAL_OK) {
-	  Error_Handler();
-  }
   /* USER CODE END 2 */
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_2);
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  __HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_2, 25);
+	  HAL_Delay(2000);
+	  __HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_2, 125);
+	  HAL_Delay(2000);
   }
   /* USER CODE END 3 */
 }
@@ -331,47 +265,58 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief TIM3 Initialization Function
+  * @brief TIM4 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_TIM3_Init(void)
+static void MX_TIM4_Init(void)
 {
 
-  /* USER CODE BEGIN TIM3_Init 0 */
-
-  /* USER CODE END TIM3_Init 0 */
+  /* USER CODE BEGIN TIM4_Init 0 */
+  /* USER CODE END TIM4_Init 0 */
 
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
 
-  /* USER CODE BEGIN TIM3_Init 1 */
-
-  /* USER CODE END TIM3_Init 1 */
-  htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 63;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 999;
-  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+  /* USER CODE BEGIN TIM4_Init 1 */
+  /* USER CODE END TIM4_Init 1 */
+  htim4.Instance = TIM4;
+  htim4.Init.Prescaler = 1280-1;
+  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim4.Init.Period = 1000-1;
+  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
   {
     Error_Handler();
   }
   sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
+  if (HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_Init(&htim4) != HAL_OK)
   {
     Error_Handler();
   }
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN TIM3_Init 2 */
-
-  /* USER CODE END TIM3_Init 2 */
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM4_Init 2 */
+  /* USER CODE END TIM4_Init 2 */
+  HAL_TIM_MspPostInit(&htim4);
 
 }
 
@@ -384,11 +329,9 @@ static void MX_USART2_UART_Init(void)
 {
 
   /* USER CODE BEGIN USART2_Init 0 */
-
   /* USER CODE END USART2_Init 0 */
 
   /* USER CODE BEGIN USART2_Init 1 */
-
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
   huart2.Init.BaudRate = 115200;
@@ -403,7 +346,6 @@ static void MX_USART2_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART2_Init 2 */
-
   /* USER CODE END USART2_Init 2 */
 
 }
@@ -416,6 +358,8 @@ static void MX_USART2_UART_Init(void)
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
+/* USER CODE BEGIN MX_GPIO_Init_1 */
+/* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -443,20 +387,11 @@ static void MX_GPIO_Init(void)
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
+/* USER CODE BEGIN MX_GPIO_Init_2 */
+/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
-void
-HAL_TIM_PeriodElapsedCallback (TIM_HandleTypeDef *htim)
-{
-  count++;
-  if (count == 1000)
-    {
-      count = 0;
-      led_state = led_state^1;
-      HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, led_state);
-    }
-}
 /* USER CODE END 4 */
 
 /**
@@ -466,11 +401,6 @@ HAL_TIM_PeriodElapsedCallback (TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -485,20 +415,24 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 
 ```
 
-**Project** 메뉴의 **Build**를 선택하여 빌드한다.
+**Project** 메뉴의 **Build Project**를 선택하여 빌드한다.
 
 ![](./img/build_result.png)
 
-에러없이 빌드되었으면, RUN 메뉴에서 RUN 항목을 선택하여 실행한다. 
 
-타겟 보드의 Green LED가 1초 점등, 1초 소등을 반복하는 것을 확인한다.
+
+에러없이 빌드되었으면, 서보모터의 갈색 선을 GND에, 적색 선을 +5V에, 주황색 선을 NUCLEO 보드의 PB7 핀에 결선한다.
+
+![](C:\Users\Lee Yongjin\stm32\ex7_PWM_Servo\img\pb7.png)
+
+ **RUN** 메뉴에서 **RUN** 항목을 선택하여 실행한다. 
+
+서보모터가 2초간격으로 0도에서 180도 위치로 회전하는 것을 확인한다. 
 
 [**목차**](../README.md) 
