@@ -123,6 +123,16 @@ Prescaler값을 `1280-1` 로, Counter Period값을 `1000-1`로, Counter Mode를 
 
 ```c
 /* USER CODE BEGIN Includes */
+
+/* USER CODE END Includes */
+```
+
+
+
+아래와 같이 수정한다.
+
+```c
+/* USER CODE BEGIN Includes */
 #include<stdio.h>
 #include<string.h>
 /* USER CODE END Includes */
@@ -229,7 +239,7 @@ PUTCHAR_PROTOTYPE
   /* USER CODE END 1 */
 ```
 
-문자형 배열`str[]` 에 0 ~ 9 사이의 숫자에 해당하는 문자의 개수를 구하는 함수 `check_igit()` 작성
+문자형 배열`str[]` 에 0 ~ 9 사이의 숫자에 해당하는 문자의 개수를 구하는 함수 `check_digit()` 작성
 
 ```c
 /* USER CODE BEGIN 1 */
