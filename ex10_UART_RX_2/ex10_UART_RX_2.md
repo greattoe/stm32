@@ -50,57 +50,72 @@ Open Associated Perspective 대화창에서 Yes 버튼을 클릭하면 Device Co
 
 #### Device Configuration Tool
 
+#### 1. RCC 설정
 
-
-![](./img/device_config_tool.png)
-
-- **RCC 설정**
+- 
 
 RCC 설정을 위해 다음 그림과 같이 Device Configuration 창에서 Pinout & Configuration 탭의 System Core 항목 중 RCC를 선택 후 우측의 RCC Mode snd Configuration 의 Mode를 High Speed Clock(HSE), Low Speed Clock(LSE) 모두 Disable로 변경한다.
 
 ![](./img/system_core_rcc.png)
 
-- **TIM4 설정**
+
+
+#### 2. TIM4 설정
 
   Pinout & Configuration탭의 Timers의 하위항목 중 Tim4를 선택한다.  ATim4 Mode and Configuration의 Mode에서 Internal Clock을 체크, Channel2를 PWM Generation CH2로 변경 후, 화면 우측의 PINout 탭에서 PB7 핀을 클릭하여 TIM4_CH2가 나타나는 지 확인한다. 
 
   ![](./img/tim4_mode_n_config1.png)
-  
+
   Tim4의 Congiguration의 arameter Settings 탭의 Prescaler,  Counter Period 설정에 앞서 Clock을 확인해야 한다. 
-  
+
   STM32-F1xx 시리즈 MCU는 CPU와  다수의 peripheral 장치들로 이루어져 있으며, 이들은 ARMBA( Advanced Microcontroller Bus Architecture ) 버스로 연결되어 있다. 
-  
+
   ARMBA( Advanced Microcontroller Bus Architecture ) 버스는 AHB(Advanced High Performance Bus), APB1(Advanced Peripheral Bus1 ), APB2( Advanced Peripheral Bus2 ) 의 3가지 BUS로 이루어지며, 다음은 각 Peripheral Device들이 어떤 버스에 연결되어 있는가를 보여주는  구성도이다. 
-  
+
   ![](./img/stm32_f1xx_system_architecture.png)
+
   
-  
-  
+
   서보모터를 제어하기위한 PWM 파형을 TIM4 타이머의 PWM 출력 채널2를 통해 발생시키기 위해 TIM4가 연결된 APB1 버스에 공급되는 클럭 주파수를 확인해야한다.  Clock Configuration 탭을 선택한다.
-  
+
   APB1 Timer Clock이 64(MHz)라는 것을 확인할 수 있다. ![](./img/tim4_clock_config.png)
+
   
-  
-  
+
   서보모터를 제어하기위해서는 주기가 20(ms) 즉 50(Hz)인 PWM 파형이 필요하다. Tim4 Mode and Configuration에서 Parameter Settings의 Prescaler와 Counter Period에 적절한 값을 설정하여 이를 맞춰줘야 한다. 
-  
+
   Tim4에는 64(MHz) 클럭이 공급되는 것은 이미 확인 했다. 이 클럭은은 Prescaler에 의해 분주되어 타이머에 공급된다. 64(MHz)는 64,000,000Hz 인데 Prescaler Parameter를 1280으로 설정한다면, 타이머에는 64,000,000 / 1280 = 50,000(Hz)의 클럭이 공급된다. 이 때 타이머는 카운터로 동작하며, 입력되는 클럭을 카운트한다. 1초에 50,000개의 클럭이 입력되므로, 클럭 1개를 카운트 하는 데에 1/50,000초가 소요된다. 이 때 Counter Periode Parameter로 1,000을 설정한다면 클럭을 1,000번 카운트 할 때 마다 타이머 인터럽트를 발생시키게 된다. 따라서 이 때의 인터럽트 주기는 1/50,000초 × 1,000 = 1,000/50,000=1/50=2/100 초, 즉 20(ms)가 되어 서보모터를 제어하기위한 주기 20(ms)인 PWM 파형을 발생시킬 준비가 되었다. 
-  
+
   이제 TIM3 타이머의 Parameter들을 설정해보자.
-  
+
   Prescaler값이 1280 이라는 것은 1280개의 클럭이 입력될 때마다 1개의 클럭을 출력한다는 의미이다. 카운트를 1부터 시작한다면 1280개의 클럭이 입력됬을 때의 카운트 값은 1280 이겠지만, 컴퓨터는 0부터 카운트를 시작하므로 1280개의 클럭이 입력됬을 때의 카운트 값은 1281이된다. 따라서 Prescaler는 `1280-1`로 설정하고, 같은 이유로 Counter Period는 `1000-1`로 설정한다.
-  
+
   ![](./img/tim4_mode_n_config2.png)
-  
-  
-  
-  ![](./img/tim4_mode_n_config3.png)
-  
-  
-  
-  
-  
-  
+
+​    ![](./img/tim4_mode_n_config3.png)
+
+
+#### 2. TIM2 설정
+
+  Pinout & Configuration탭의 Timers의 하위항목 중 Tim2를 선택한다.  Tim2 Mode and Configuration의 Mode에서 Clock Source를 Internal Clock으로, Channel1를 PWM Generation CH1로 변경 후, 화면 우측의 PINout 탭에서 A0 핀을 클릭하여 TIM2_CH1이 나타나는 지 확인한다. 
+
+ Tim2 Mode and Configuration의 NVIC Settings 탭에서 TIM2 Global interrupt Enabled를 체크한다.
+
+![](./img\tim2_config1.png)
+
+Tim2 Mode and Configuration의 Parameter Settings 탭에서
+
+Prescaler값을 `1280-1` 로, Counter Period값을 `1000-1`로, Counter Mode를 Up으로 설정한다.
+
+![](./img\tim2_config2.png)
+
+계속 Tim2 Mode and Configuration의 Parameter Settings 탭에서 PWM Generation Channel1 Mode를 `PWM mode1`로, Pulse는 `0`으로, Output Compare preload는 `Enable`로, CH Polarity는 `High`로 설정한다.
+
+![](./img\tim2_config3.png)
+
+
+
+  Project 메뉴의 Generate Code를 실행한다. 
 
 ![](./img\generate_code.png)
 
@@ -119,25 +134,6 @@ RCC 설정을 위해 다음 그림과 같이 Device Configuration 창에서 Pino
 /* USER CODE BEGIN WHILE */
   {
     /* USER CODE END WHILE */
-```
-
-
-
-`main.c`의 다음코드를 `main.c`의 다음코드를
-
-```c
-/* USER CODE BEGIN PV */
-/* USER CODE END PV */
-```
-
- 아래와 같이 수정한다.
-
-```c
-/* USER CODE BEGIN PV */
-uint8_t str[10];
-uint8_t pos_pan;
-uint8_t pos_tilt;
-/* USER CODE END PV */
 ```
 
 
@@ -220,8 +216,9 @@ PUTCHAR_PROTOTYPE
 
 ```c
 /* USER CODE BEGIN WHILE */
-  //HAL_TIM_PWM_Start(&htim1,TIM_CHANNEL_2);
+  HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_2);
+  printf("===\n");
 
   while (1)
   {
@@ -248,16 +245,16 @@ PUTCHAR_PROTOTYPE
 	  if(ptr1_str !=NULL )
 	  {
 		  pos_pan = (str[3]-'0')*100 + (str[4]-'0')*10 +(str[5]-'0');
-		  printf("pos = %d\n",pos_pan);
+		  printf("pos_pan = %d\n",pos_pan);
 		  __HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_2, pos_pan);
 	  }
 
 	  else if(ptr2_str !=NULL )
 	  {
 		  pos_tilt = (str[4]-'0')*100 + (str[5]-'0')*10 +(str[6]-'0');
-		  printf("tilt = %d\n",pos_tilt);
+		  printf("pos_tilt = %d\n",pos_tilt);
 	  }
-	  //__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, pos_tilt);
+	  __HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, pos_tilt);
   }
   /* USER CODE END 3 */
 ```
@@ -309,6 +306,7 @@ PUTCHAR_PROTOTYPE
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim4;
 
 UART_HandleTypeDef huart2;
@@ -324,6 +322,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_TIM4_Init(void);
+static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -385,14 +384,16 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_TIM4_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  //HAL_TIM_PWM_Start(&htim1,TIM_CHANNEL_2);
+  HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_2);
+  printf("===\n");
 
   while (1)
   {
@@ -407,16 +408,16 @@ int main(void)
 	  if(ptr1_str !=NULL )
 	  {
 		  pos_pan = (str[3]-'0')*100 + (str[4]-'0')*10 +(str[5]-'0');
-		  printf("pos = %d\n",pos_pan);
+		  printf("pos_pan = %d\n",pos_pan);
 		  __HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_2, pos_pan);
 	  }
 
 	  else if(ptr2_str !=NULL )
 	  {
 		  pos_tilt = (str[4]-'0')*100 + (str[5]-'0')*10 +(str[6]-'0');
-		  printf("tilt = %d\n",pos_tilt);
+		  printf("pos_tilt = %d\n",pos_tilt);
 	  }
-	  //__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, pos_tilt);
+	  __HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, pos_tilt);
   }
   /* USER CODE END 3 */
 }
@@ -457,6 +458,65 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 1280-1;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 1000-1;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+  /* USER CODE END TIM2_Init 2 */
+  HAL_TIM_MspPostInit(&htim2);
+
 }
 
 /**
