@@ -1,6 +1,6 @@
 ### USART_RX_2
 
-시리얼통신으로문자열을 수신하여 수신된 내용에 따라 Servo 제어
+시리얼통신으로문자열을 수신하여 수신된 내용에 따라 Servo 2EA 제어
 
 #### 개발환경
 
@@ -144,6 +144,7 @@ Prescaler값을 `1280-1` 로, Counter Period값을 `1000-1`로, Counter Mode를 
 
 ```c
 /* USER CODE BEGIN PV */
+
 /* USER CODE END PV */
 ```
 
@@ -154,8 +155,29 @@ Prescaler값을 `1280-1` 로, Counter Period값을 `1000-1`로, Counter Mode를 
 uint8_t str[10];
 uint8_t pos_pan;
 uint8_t pos_tilt;
+uint8_t digits;
 /* USER CODE END PV */
 ```
+
+
+
+`main.c`의 다음코드를 `main.c`의 다음코드를
+
+```c
+/* USER CODE BEGIN PFP */
+
+/* USER CODE END PFP */
+```
+
+ 아래와 같이 수정한다.
+
+```c
+/* USER CODE BEGIN PFP */
+int check_digit(void);
+/* USER CODE END PFP */
+```
+
+
 
 
 
@@ -197,6 +219,32 @@ PUTCHAR_PROTOTYPE
   return ch;
 }
 /* USER CODE END 0 */
+```
+
+
+
+```c
+/* USER CODE BEGIN 1 */
+
+  /* USER CODE END 1 */
+```
+
+문자형 배열`str[]` 에 0 ~ 9 사이의 숫자에 해당하는 문자의 개수를 구하는 함수 `check_igit()` 작성
+
+```c
+/* USER CODE BEGIN 1 */
+	int check_digit() {
+		int i, cnt;
+		cnt = 0;
+		for(i=0; i<=strlen(str); i++) {
+			if(str[i]>='0' && str[i]<='9') {
+				cnt++;
+			}
+		}
+		return cnt;
+		}
+
+  /* USER CODE END 1 */
 ```
 
 
@@ -244,17 +292,34 @@ PUTCHAR_PROTOTYPE
 
 	  if(ptr1_str !=NULL )
 	  {
+		  digits = check_digit();
+		  if     (digits==3) {
 		  pos_pan = (str[3]-'0')*100 + (str[4]-'0')*10 +(str[5]-'0');
+		  }
+		  else if(digits==2) {
+			  pos_pan = (str[3]-'0')*10 + (str[4]-'0');
+		  }
+		  else if(digits==1) {
+			  pos_pan = str[3]-'0';
+		  }
 		  printf("pos_pan = %d\n",pos_pan);
 		  __HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_2, pos_pan);
 	  }
 
 	  else if(ptr2_str !=NULL )
 	  {
+		  digits = check_digit();
+		  if     (digits==3){
 		  pos_tilt = (str[4]-'0')*100 + (str[5]-'0')*10 +(str[6]-'0');
+		  }
+		  else if(digits==2) {
+			  pos_tilt = (str[4]-'0')*10 + (str[5]-'0');
+		  }
+		  else if(digits==1) {
+			  pos_tilt = str[4]-'0';
 		  printf("pos_tilt = %d\n",pos_tilt);
+		  __HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, pos_tilt);
 	  }
-	  __HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, pos_tilt);
   }
   /* USER CODE END 3 */
 ```
@@ -315,6 +380,7 @@ UART_HandleTypeDef huart2;
 uint8_t str[10];
 uint8_t pos_pan;
 uint8_t pos_tilt;
+uint8_t digits;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -323,6 +389,7 @@ static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_TIM2_Init(void);
+int check_digit(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -361,6 +428,16 @@ PUTCHAR_PROTOTYPE
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	int check_digit() {
+		int i, cnt;
+		cnt = 0;
+		for(i=0; i<=strlen(str); i++) {
+			if(str[i]>='0' && str[i]<='9') {
+				cnt++;
+			}
+		}
+		return cnt;
+		}
 
   /* USER CODE END 1 */
 
@@ -407,17 +484,36 @@ int main(void)
 
 	  if(ptr1_str !=NULL )
 	  {
+		  digits = check_digit();
+		  if     (digits==3) {
 		  pos_pan = (str[3]-'0')*100 + (str[4]-'0')*10 +(str[5]-'0');
+		  }
+		  else if(digits==2) {
+			  pos_pan = (str[3]-'0')*10 + (str[4]-'0');
+		  }
+		  else if(digits==1) {
+			  pos_pan = str[3]-'0';
+		  }
 		  printf("pos_pan = %d\n",pos_pan);
 		  __HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_2, pos_pan);
 	  }
 
 	  else if(ptr2_str !=NULL )
 	  {
+		  digits = check_digit();
+		  if     (digits==3){
 		  pos_tilt = (str[4]-'0')*100 + (str[5]-'0')*10 +(str[6]-'0');
+		  }
+		  else if(digits==2) {
+			  pos_tilt = (str[4]-'0')*10 + (str[5]-'0');
+		  }
+		  else if(digits==1) {
+			  pos_tilt = str[4]-'0';
+		  }
+		  __HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_2, pos_pan);
 		  printf("pos_tilt = %d\n",pos_tilt);
+		  __HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, pos_tilt);
 	  }
-	  __HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, pos_tilt);
   }
   /* USER CODE END 3 */
 }
@@ -688,6 +784,7 @@ void assert_failed(uint8_t *file, uint32_t line)
 }
 #endif /* USE_FULL_ASSERT */
 
+
 ```
 
 **Project** 메뉴의 **Build Project**를 선택하여 빌드한다.
@@ -702,7 +799,7 @@ void assert_failed(uint8_t *file, uint32_t line)
 
  **RUN** 메뉴에서 **RUN** 항목을 선택하여 실행한다. 
 
-시리얼통신 에뮬레이터에서  `pan025` , `pan075` , `pan125` 등을 입력했을 때 해당 Servo가 동작하는 가를 확인한다. 
+시리얼통신 에뮬레이터에서  `pan25` , `pan75` , `pan125` , `tilt25` , `tilt75` , `tilt125` 등을 입력했을 때 해당 Servo가 동작하는 가를 확인한다. 
 
 
 
