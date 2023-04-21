@@ -17,17 +17,21 @@ STM32CubeIDE 환경에서 NUCLEO-F103RB 보드를 타겟으로 MCU가 제공하�
 >
 >6. [6. ADC(Analog to Digital 컨버팅)](./ex06_ADC/ex06_ADC.md) 
 >
->7. [7. USART_rb(시리얼 수신)](./ex07_USART_rb/ex07_USART_rb.md) 
+>7. [7. TIM_Servo(서보모터 제어)](./ex07_TIM_Servo/ex07_TIM_Servo.md) 
 >
->8. [8. USART_poll_1(시리얼 수신)](./ex09_USART_RX_1/ex09_USART_RX_1.md) 
+>   
 >
->9. [9. USART_poll_2(시리얼 수신)](./ex10_UART_RX_2/ex10_UART_RX_2.md) 
+>8. 
 >
->10. [10. TIM_Servo (서보제어)](./ex8_TIM_Servo/ex8_TIM_Servo.md) 
+>9. [8. USART_poll_1(시리얼 수신)](./ex09_USART_RX_1/ex09_USART_RX_1.md) 
 >
->    
+>10. [8. USART_poll_2(시리얼 수신)](./ex09_USART_RX_1/ex09_USART_RX_1.md) 
 >
->11. [10. WEB_Control2 (웹LED제어및 ADC결과 표시)](./ex09_WEB_Cotrol2/ex09_WEB_Cotrol2.md) 
+>11. [9. ex09_UART_RX_2(시리얼 수신)](./ex09_UART_RX_2/ex09_UART_RX_2.md) 
+>
+>12. [10. TIM_Servo (서보제어)](./ex8_TIM_Servo/ex8_TIM_Servo.md) 
+>
+>11. 
 
 ---
 

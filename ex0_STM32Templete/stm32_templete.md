@@ -1,6 +1,6 @@
-### Control by WEB
+### Main Title
 
-Node.js 로 구현한 웹서버를 통해 타겟보드에 연결된 가변저항의 ADC 결과를 실시간으로 웹페이지에 표시하고, 타겟보드의 LED를 제어하는 기능을 구현해보자.
+수행할 작업내용
 
 #### 개발환경
 
@@ -16,7 +16,7 @@ Node.js 로 구현한 웹서버를 통해 타겟보드에 연결된 가변저항
 
 **STM32CubeIDE** 실행 후, 아래와 같이 File - New - STM32 Project 선택 
 
-![](C:/Users/Lee Yongjin/stm32/ex06_ADC/img/stm32cube_ide_new_project.png)
+![](./img/stm32cube_ide_new_project.png)
 
 
 
@@ -24,27 +24,27 @@ Node.js 로 구현한 웹서버를 통해 타겟보드에 연결된 가변저항
 
 Tafget Selection 윈도우가 나타나면 **Board Selector** 탭을 클릭한다.
 
-![](C:/Users/Lee Yongjin/stm32/ex06_ADC/img/board_selector.png)
+![](./img/board_selector.png)
 
 Board selector 탭의 Type에서 NUCLEO64를 체크, MCU/MPU Series에서 STM32F1을 체크 하면 Board List에 **NUCLEO-F103RB**가 표시된다. 이를 선택 후, 하단의 Next > 버튼을 클릭한다.
 
-![](C:/Users/Lee Yongjin/stm32/ex06_ADC/img/board_type.png)
+![](./img/board_type.png)
 
 STM32 Project 창이 나타나면 Project Name: 에 적당한 프로젝트명을 입력 후, Finish 버튼을 클릭한다. 
 
-![](C:/Users/Lee Yongjin/stm32/ex06_ADC/img/stm32_project.png)
+![](./img/stm32_project.png)
 
 Board Project Options 대화창에서 Yes 버튼을 클릭한다.
 
 
 
-![](C:/Users/Lee Yongjin/stm32/ex06_ADC/img/board_project_options.png)
+![](./img/board_project_options.png)
 
 Open Associated Perspective 대화창에서 Yes 버튼을 클릭하면 Device Configration Tool 창이 열린다.
 
 
 
-![](C:/Users/Lee Yongjin/stm32/ex06_ADC/img/open_associated_perspective.png)
+![](./img/open_associated_perspective.png)
 
 
 
@@ -52,78 +52,78 @@ Open Associated Perspective 대화창에서 Yes 버튼을 클릭하면 Device Co
 
 
 
-![](C:/Users/Lee Yongjin/stm32/ex06_ADC/img/device_config_tool.png)
 
-- **RCC 설정**
+
+ **RCC 설정**
 
 RCC 설정을 위해 다음 그림과 같이 Device Configuration 창에서 Pinout & Configuration 탭의 System Core 항목 중 RCC를 선택 후 우측의 RCC Mode snd Configuration 의 Mode를 High Speed Clock(HSE), Low Speed Clock(LSE) 모두 Disable로 변경한다.
 
-![](C:/Users/Lee Yongjin/stm32/ex06_ADC/img/system_core_rcc.png)
+![](./img/system_core_rcc.png)
 
-- **ADC1 설정**
 
-  Pinout & Configuration탭의 Analog의 하위항목 중 ADC1을 선택한다.  ADC1 Mode and Configuration의 Mode에서 Temperature Sensor Channel을 체크, Configuration의 Parameter Settings 탭에서 Mode 는 Independent mode, Data Alignment는 Right Alignment, Scan Conversion Mode는 Disabled, Continuous Conversion Mode는 Enabled, Discontinuous Coversion Mode는 Disabled, Enable Regular Coversions는 Enable, Number of Conversion은 1, Rank는 1, Enable Injected Conversions는 Disable로 설정하고. 
 
-  
 
-  ![](C:/Users/Lee Yongjin/stm32/ex06_ADC/img/adc_mode_n_config.png)
 
-`>`RANK 앞의 `<` 를 클릭하면 나타나는 Sampling Time은 13.5 Cycle 로 설정한다.  그리고 나서 클럭 설정 확인을 위해 Clock Configuration 탭을 클릭하면클럭 설정 문제와 자동 설정으로 해결하려면 원하는 버튼을 클릭하라는 대화창이 나타나는데, 여기서 YES 버튼을 클릭한다. 
 
-![](C:/Users/Lee Yongjin/stm32/ex06_ADC/img/auto_clock_issue_solver.png)
 
-지금까지 진행한 의 설정을 반영한 코드 생성하기 위해 Project 메뉴의 Generate Code 메뉴를 선택한다. 
+#### 코드작성
 
-![](C:/Users/Lee Yongjin/stm32/ex06_ADC/img/generate_code.png)
-
-`printf()` 사용을 위해`main.c`의 다음코드를 
+`main.c`의 다음코드를 `main.c`의 다음코드를 
 
 ```c
-/* USER CODE BEGIN Includes */
-
+USER CODE BEGIN Includes */
+    
 /* USER CODE END Includes */
 ```
 
-아래와 같이 변경한다.
+아래와 같이 수정한다. 
 
 ```c
-/* USER CODE BEGIN Includes */
-#include <stdio.h>
+USER CODE BEGIN Includes */
+#include<stdio.h>
 /* USER CODE END Includes */
 ```
 
-온도센서의 ADC 결과로부터 온도를 산출하기위해 다음 코드를
+
+
+
+
+
+
+ `main.c`의 다음코드를 
 
 ```c
 /* USER CODE BEGIN PV */
+
+
 /* USER CODE END PV */
 ```
 
-아래와 같이 변경한다. 
+아래와 같이 수정한다. 
 
 ```c
 /* USER CODE BEGIN PV */
-const float AVG_SLOPE = 4.3E-03;      // slope (gradient) of temperature line function
-const float V25 = 1.43;               // sensor's voltage at 25°C [V]
-const float ADC_TO_VOLT = 3.3 / 4096; // conversion coefficient of digital value to volt
-                                      // when using 3.3V ref. voltage at 12-bit resolution
+uint8_t rx_dat;
+
 /* USER CODE END PV */
 ```
 
 
 
-`printf()` 사용을 위해`main.c`의 다음코드 를 
+
+
+`main.c`의 다음코드를 `main.c`의 다음코드를 
 
 ```c
-/* USER CODE BEGIN 0 */
-
+USER CODE BEGIN 0 */
+    
 /* USER CODE END 0 */
 ```
 
-아래와 같이 변경한다. 
+아래와 같이 수정한다. 
 
 ```c
-/* USER CODE BEGIN 0 */
+USER CODE BEGIN 0 */
 #ifdef __GNUC__
 /* With GCC, small printf (option LD Linker->Libraries->Small printf
    set to 'Yes') calls __io_putchar() */
@@ -150,40 +150,65 @@ PUTCHAR_PROTOTYPE
 /* USER CODE END 0 */
 ```
 
-`main.c`의 다음코드를 
+
+
+
+
+
+
+`main.c`의 다음코드를 `main.c`의 다음코드를 
 
 ```c
 /* USER CODE BEGIN WHILE */
-  {
+
     /* USER CODE END WHILE */
 ```
 
-
+아래와 같이 수정한다. 
 
 ```c
 /* USER CODE BEGIN WHILE */
-
-  /* Start calibration */
-  if (HAL_ADCEx_Calibration_Start (&hadc1) != HAL_OK)
-    {
-      Error_Handler ();
-    }
-
-  /* Start the conversion process */
-  if (HAL_ADC_Start (&hadc1) != HAL_OK)
-    {
-      Error_Handler ();
-    }
-
-  uint16_t adc1;
   while (1)
-  {HAL_ADC_PollForConversion (&hadc1, 100);
-  adc1 = HAL_ADC_GetValue (&hadc1);
-  printf ("ADC Result = %d \n", adc1);
+  {
+    /* USER CODE BEGIN 3 */
     /* USER CODE END WHILE */
 ```
 
-다음은 편집이 완료된 `main.c`의 전체 코드이다.
+
+
+`main.c`의 다음코드를 `main.c`의 다음코드를 
+
+```c
+/* USER CODE BEGIN 3 */
+
+  /* USER CODE END 3 */
+```
+
+아래와 같이 수정한다. 
+
+```c
+/* USER CODE BEGIN 3 */
+	    /* USER CODE END WHILE */
+		  HAL_UART_Receive(&huart2, &rx_dat, sizeof(rx_dat), 10);
+		  if(rx_dat == '1')
+		  {
+			  printf("LED On\n");
+			  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 1);
+			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1);
+		  }
+		  else if(rx_dat == '0')
+		  {
+			  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
+			  printf("LED Off\n");
+		  }
+		  else;
+  }
+  /* USER CODE END 3 */
+```
+
+
+
+다음은 코드 편집이 완료된 `main.c` 의 내용이다. 
 
 ```c
 /* USER CODE BEGIN Header */
@@ -209,8 +234,7 @@ PUTCHAR_PROTOTYPE
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdio.h>
-#include <string.h>
+#include<stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -220,7 +244,6 @@ PUTCHAR_PROTOTYPE
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -229,23 +252,17 @@ PUTCHAR_PROTOTYPE
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc1;
-
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-uint16_t adc1;
-char adc[4] = "adc";
-char adc_state[7] = "";	//"adc1023"
-char rx_str[10] = "";    //"led1", "led0"
-char *cmd;
+uint8_t rx_dat;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
-static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -306,56 +323,32 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
-  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
-    /* Start calibration */
-    if (HAL_ADCEx_Calibration_Start (&hadc1) != HAL_OK)
-      {
-        Error_Handler ();
-      }
-
-    /* Start the conversion process */
-    if (HAL_ADC_Start (&hadc1) != HAL_OK)
-      {
-        Error_Handler ();
-      }
-
-    while (1)
-    {
-    	HAL_UART_Receive(&huart2,rx_str, 10, 100);
-    	//printf("rcv = %s\n", rx_str);
-    	 cmd = strstr(rx_str, "led");
-    	HAL_ADC_PollForConversion (&hadc1, 100);
-		adc1 = HAL_ADC_GetValue (&hadc1);
-		adc1 /= 4;
-		sprintf(adc_state, "%s%d\n", adc, adc1); //"adc512", "adc1023"
-		printf ("%s\n", adc_state);
-		if(cmd != NULL)
-		{
-			if(rx_str[3] == '1')
-			{
-				HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 1);
-				printf("led1\n");
-			}
-			else if(rx_str[3] == '0')
-			{
-				HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
-				printf("led0\n");
-			}
-			else;
-		}
-		//HAL_Delay(250);
-
-
+  while (1)
+  {
+    /* USER CODE BEGIN 3 */
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	    /* USER CODE END WHILE */
+		  HAL_UART_Receive(&huart2, &rx_dat, sizeof(rx_dat), 10);
+		  if(rx_dat == '1')
+		  {
+			  printf("LED On\n");
+			  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 1);
+			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1);
+		  }
+		  else if(rx_dat == '0')
+		  {
+			  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
+			  printf("LED Off\n");
+		  }
+		  else;
   }
   /* USER CODE END 3 */
 }
@@ -368,7 +361,6 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
@@ -378,7 +370,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI_DIV2;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL2;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL16;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -393,63 +385,10 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
-  PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV2;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
-  {
-    Error_Handler();
-  }
-}
-
-/**
-  * @brief ADC1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_ADC1_Init(void)
-{
-
-  /* USER CODE BEGIN ADC1_Init 0 */
-
-  /* USER CODE END ADC1_Init 0 */
-
-  ADC_ChannelConfTypeDef sConfig = {0};
-
-  /* USER CODE BEGIN ADC1_Init 1 */
-
-  /* USER CODE END ADC1_Init 1 */
-
-  /** Common config
-  */
-  hadc1.Instance = ADC1;
-  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
-  hadc1.Init.ContinuousConvMode = ENABLE;
-  hadc1.Init.DiscontinuousConvMode = DISABLE;
-  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.NbrOfConversion = 1;
-  if (HAL_ADC_Init(&hadc1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Regular Channel
-  */
-  sConfig.Channel = ADC_CHANNEL_0;
-  sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_13CYCLES_5;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN ADC1_Init 2 */
-
-  /* USER CODE END ADC1_Init 2 */
-
 }
 
 /**
@@ -562,15 +501,29 @@ void assert_failed(uint8_t *file, uint32_t line)
 }
 #endif /* USE_FULL_ASSERT */
 
-
 ```
 
-**Project** 메뉴의 **Build**를 선택하여 빌드한다.
-
-![](C:/Users/Lee Yongjin/stm32/ex06_ADC/img/build_result.png)
-
-에러없이 빌드되었으면, RUN 메뉴에서 RUN 항목을 선택하여 실행한다. 
 
 
+
+
+**Project** 메뉴의 **Build Project**를 선택하여 빌드한다.
+
+![](./img/build_result.png)
+
+
+
+
+
+에러없이 빌드되었으면, 결선 방법
+
+![](./img/pb7.png)
+
+ **RUN** 메뉴에서 **RUN** 항목을 선택하여 실행한다. 
+
+확인할 동작, 상태 
 
 [**목차**](../README.md) 
+
+
+
