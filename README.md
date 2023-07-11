@@ -5,7 +5,7 @@ STM32CubeIDE 환경에서 NUCLEO-F103RB 보드를 타겟으로 MCU가 제공하�
 
 
 
->1. [1. LED_Blink( GPIO 출력)](./ex01_LED_Blink/ex01_LED_BLINK.md) 
+>1. [1. Install STM32CubeIDE( 개발환경설정)](./ex0_STM32CubeIDE/ex0_STM32CubeIDE.md) 
 >
 >
 >   >1. [1. LED_Blink( GPIO 출력)](./ex01_LED_Blink/ex01_LED_BLINK.md) 
