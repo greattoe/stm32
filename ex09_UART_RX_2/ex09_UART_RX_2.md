@@ -1,6 +1,6 @@
 ### 폴링 방식을 이용한 문자열 수신
 
-USART 시리얼 통신으로 전송받은 문자열에 따라 각기 다른 2개의 서보모터를 제어해 보자.
+USART 시리얼 통신으로 전송받은 문자열에 따라 각기 다른 2개의 서보 모터를 제어해 보자.
 
 
 
@@ -10,7 +10,7 @@ USART 시리얼 통신으로 전송받은 문자열에 따라 각기 다른 2개
 
  **RCC 설정**
 
-RCC 설정을 위해 다음 그림과 같이 Device Configuration 창에서 Pinout & Configuration 탭의 System Core 항목 중 RCC를 선택 후 우측의 RCC Mode snd Configuration 의 Mode를 High Speed Clock(HSE), Low Speed Clock(LSE) 모두 Disable로 변경한다.
+RCC 설정을 위해 다음 그림과 같이 Device Configuration 창에서 Pinout & Configuration 탭의 System Core 항목 중 RCC를 선택 후 우측의 RCC Mode and Configuration 의 Mode의 High Speed Clock(HSE) 및 Low Speed Clock(LSE) 모두를 Disable로 변경한다.
 
 ![](./img/system_core_rcc.png)
 
