@@ -7,6 +7,9 @@ STM32CubeIDE 환경에서 NUCLEO-F103RB 보드를 타겟으로 MCU가 제공하�
 
 >1. [1. LED_Blink( GPIO 출력)](./ex01_LED_Blink/ex01_LED_BLINK.md) 
 >
+>
+>   >1. [1. LED_Blink( GPIO 출력)](./ex01_LED_Blink/ex01_LED_BLINK.md) 
+>
 >2. [2. LED_Toggle( GPIO 입력)](./ex02_LED_Toggle/ex02_LED_Toggle.md) 
 >
 >3. [3. printf(시리얼 송신)](./ex03_printf/ex03_printf.md) 
@@ -19,7 +22,7 @@ STM32CubeIDE 환경에서 NUCLEO-F103RB 보드를 타겟으로 MCU가 제공하�
 >
 >7. [7. TIM_Servo(서보모터 제어)](./ex07_TIM_Servo/ex07_TIM_Servo.md) 
 >
->   
+>
 >
 >8. 
 >

@@ -1,4 +1,4 @@
-### Install STM32 CubeIDE
+### Install STM32 Cube IDE
 
 수행할 작업내용
 
