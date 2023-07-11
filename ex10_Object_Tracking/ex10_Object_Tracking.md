@@ -1,16 +1,12 @@
 ### OpenCV를 이용한 객체 추적
 
-1. 펌웨어
+#### 1. STM32 Firmware
 
-USART 시리얼 통신으로 전송받은 문자열에 따라 카메라 팬틸트 제어
-
-
-
-![](./img/device_config_tool.png)
+USART 시리얼 통신으로 전송받은 문자열에 따라 카메라 팬/틸트 제어 기능 구현
 
 
 
- **RCC 설정**
+**1.1 RCC 설정**
 
 RCC 설정을 위해 다음 그림과 같이 Device Configuration 창에서 Pinout & Configuration 탭의 System Core 항목 중 RCC를 선택 후 우측의 RCC Mode and Configuration 의 Mode의 High Speed Clock(HSE) 및 Low Speed Clock(LSE) 모두를 Disable로 변경한다.
 
@@ -20,7 +16,7 @@ RCC 설정을 위해 다음 그림과 같이 Device Configuration 창에서 Pino
 
 
 
- **TIM4 설정**
+ **1.2 TIM4 설정**
 
   Pinout & Configuration탭의 Timers의 하위항목 중 Tim4를 선택한다.  ATim4 Mode and Configuration의 Mode에서 Internal Clock을 체크, Channel2를 PWM Generation CH2로 변경 후, 화면 우측의 PINout 탭에서 PB7 핀을 클릭하여 TIM4_CH2가 나타나는 지 확인한다. 
 
@@ -58,7 +54,7 @@ RCC 설정을 위해 다음 그림과 같이 Device Configuration 창에서 Pino
 
   
 
-  **TIM2 설정**
+  **1.3 TIM2 설정**
 
   Pinout & Configuration탭의 Timers의 하위항목 중 Tim2를 선택한다.  Tim2 Mode and Configuration의 Mode에서 Clock Source를 Internal Clock으로, Channel1를 PWM Generation CH1로 변경 후, 화면 우측의 PINout 탭에서 PA0 핀을 클릭하여 TIM2_CH1이 나타나는 지 확인한다. 
 
@@ -81,9 +77,9 @@ Tim2의 Congiguration의 arameter Settings 탭의 Prescaler,  Counter Period 설
 
 ![](./img\generate_code.png)
 
+**1.4 `main.c` 편집**
 
-
-`main.c`의 다음코드를 `main.c`의 다음코드를 
+`main.c`의 다음코드를
 
 ```c
 /* USER CODE BEGIN Includes */
@@ -102,7 +98,7 @@ Tim2의 Congiguration의 arameter Settings 탭의 Prescaler,  Counter Period 설
 
 
 
-`main.c`의 다음코드를 `main.c`의 다음코드를 
+`main.c`의 다음코드를
 
 ```c
 /* USER CODE BEGIN PV */
@@ -125,7 +121,7 @@ uint8_t digits;
 
 
 
-`main.c`의 다음코드를 `main.c`의 다음코드를 
+`main.c`의 다음코드를
 
 ```c
 /* USER CODE BEGIN PFP */
@@ -146,7 +142,7 @@ void reset_str(void);
 
 
 
-`main.c`의 다음코드를 `main.c`의 다음코드를 
+`printf()`함수 사용을 위해 `main.c`의 다음코드를
 
 ```c
 /* USER CODE BEGIN 0 */
@@ -189,7 +185,7 @@ PUTCHAR_PROTOTYPE
 
 
 
-ㅇ위에서 수정한 코드 마지막 줄 `/* USER CODE END 0 */` 바로 다음 줄에 다음코드를 삽입한다. 
+위에서 수정한 코드 마지막 줄 `/* USER CODE END 0 */` 바로 다음 줄에 다음코드를 삽입한다. 
 
 ```c
 /* USER CODE BEGIN 1 */
@@ -213,71 +209,7 @@ void reset_str(void) {
 /* USER CODE END 1 */
 ```
 
-
-
-
-
-
-
-
-
-`printf()` 사용을 위해`main.c`의 다음코드를 `main.c`의 다음코드를 
-
-```c
-/* USER CODE BEGIN 0 */
-#ifdef __GNUC__
-/* With GCC, small printf (option LD Linker->Libraries->Small printf
-   set to 'Yes') calls __io_putchar() */
-#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
-#else
-#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
-#endif /* __GNUC__ */
-
-/**
-  * @brief  Retargets the C library printf function to the USART.
-  * @param  None
-  * @retval None
-  */
-PUTCHAR_PROTOTYPE
-{
-  /* Place your implementation of fputc here */
-  /* e.g. write a character to the USART1 and Loop until the end of transmission */
-  if (ch == '\n')
-    HAL_UART_Transmit (&huart2, (uint8_t*) "\r", 1, 0xFFFF);
-  HAL_UART_Transmit (&huart2, (uint8_t*) &ch, 1, 0xFFFF);
-
-  return ch;
-}
-/* USER CODE END 0 */
-```
-
-
-
-```c
-
-/* USER CODE END 0 */
-```
-
-
-
-
-
-`printf()` 사용을 위해`main.c`의 다음코드를 `main.c`의 다음코드를 
-
-```c
- /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    /* USER CODE END WHILE */
-```
-
-
-
-
-
-
-
-`printf()` 사용을 위해`main.c`의 다음코드를 `main.c`의 다음코드를 
+`main.c`의 다음코드를 `main.c`의 다음코드를 
 
 ```c
 /* USER CODE BEGIN WHILE */
@@ -285,7 +217,7 @@ PUTCHAR_PROTOTYPE
     /* USER CODE END WHILE */
 ```
 
-
+아래와 같이 수정한다. 
 
 ```c
 /* USER CODE BEGIN WHILE */
@@ -312,6 +244,21 @@ PUTCHAR_PROTOTYPE
 
 ```c
 
+	 /* USER CODE BEGIN 3 */
+
+	  HAL_UART_Receive(&huart2,str,10,100);
+	  char *ptr1_str = strstr(str, "pan");
+	  char *ptr2_str = strstr(str, "tilt");
+
+	  if(ptr1_str !=NULL )
+	  {
+		  digits = check_digit();
+		  if     (digits==3) {
+		  pos_pan = (str[3]-'0')*100 + (str[4]-'0')*10 +(str[5]-'0');
+		  }
+		  else if(digits==2) {
+			  pos_pan = (str[3]-'0')*10 + (str[4]-'0');
+		  }
 		  else if(digits==1) {
 			  pos_pan = str[3]-'0';
 		  }
