@@ -768,7 +768,7 @@ void assert_failed(uint8_t *file, uint32_t line)
 
  **RUN** 메뉴에서 **RUN** 항목을 선택하여 실행한다. 
 
-`pan25` ~ `pan125` 를 시리얼로 전송하면 TIM2 Channel2에 연결된 서보모터가 0도 ~ 180도 회전하고, `tilt25` ~ `tilt125` 를 시리얼로 전송하면 TIM2 Channel2에 연결된 서보모터가 0도 ~ 180도 회전하는 것을 확인한다. 
+`pan25` ~ `pan125` 를 시리얼로 전송하면 TIM4 Channel2에 연결된 서보모터가 0도 ~ 180도 회전하고, `tilt25` ~ `tilt125` 를 시리얼로 전송하면 TIM2 Channel1에 연결된 서보모터가 0도 ~ 180도 회전하는 것을 확인한다. 
 
 
 
