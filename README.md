@@ -32,7 +32,7 @@ STM32CubeIDE 환경에서 NUCLEO-F103RB 보드를 타겟으로 MCU가 제공하�
 >
 >11. [9. ex09_UART_RX_2(시리얼 수신)](./ex09_UART_RX_2/ex09_UART_RX_2.md) 
 >
->12. [10. TIM_Servo (서보제어)](./ex8_TIM_Servo/ex8_TIM_Servo.md) 
+>12. [10. Object Tracking](./ex10_Object_Tracking/ex10_Object_Tracking.md) 
 >
 >11. ___
 
