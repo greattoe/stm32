@@ -19,7 +19,7 @@ STM32CubeIDE 환경에서 NUCLEO-F103RB 보드를 타겟으로 MCU가 제공하�
 >
 >7. [7. TIM_Servo(서보모터 제어)](./ex07_TIM_Servo/ex07_TIM_Servo.md) 
 >
->   
+>
 >
 >8. 
 >
@@ -31,7 +31,10 @@ STM32CubeIDE 환경에서 NUCLEO-F103RB 보드를 타겟으로 MCU가 제공하�
 >
 >12. [10. TIM_Servo (서보제어)](./ex8_TIM_Servo/ex8_TIM_Servo.md) 
 >
->11. 
+>13. 
+>
+>14. [11. Object Tracking (OpenCV를 이용한 객체 추적)](./ex11_obj_track/ex11_obj_track.md) 
+>15. 
 
 ---
 
