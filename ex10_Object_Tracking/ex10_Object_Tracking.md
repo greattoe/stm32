@@ -1178,7 +1178,7 @@ cv2.destroyAllWindows()
 
 
 
-**2.2 `tilt_blue.py`**
+**2.2 `track_blue.py`**
 
 ```python
 import cv2
