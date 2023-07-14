@@ -1100,8 +1100,6 @@ margin_y = 80
 _pan = pan = 75
 _tilt = tilt = 75
 
-led_val = 0
-
 sp  = serial.Serial('/COM5', 115200, timeout=1)
 
 pan = _pan = 75
@@ -1111,19 +1109,13 @@ def send_ptval(pan, tilt):
     tx_dat = str(pan) + " " + str(tilt) + "\n"
     sp.write(tx_dat.encode())
     print(tx_dat)
-    
-    
-def send_led_val(led_val):
-    tx_dat = "led" + str(led_val) + "\n"
-    sp.write(tx_dat.encode())
-    print(tx_dat)
 
 send_ptval(75, 75)
 
 def main(args=None):
     global pan; global _pan; global tilt; global _tilt;
 
-cap = cv2.VideoCapture(0)       # /dev/video4
+cap = cv2.VideoCapture(1)       # use 2nd camera
 
 
 while(1):
@@ -1169,9 +1161,6 @@ while(1):
             
      # draw bounding box with green line
     if largest_contour is not None:
-        tx_dat="led1\n"
-        sp.write(tx_dat.encode())
-        
         #area = cv2.contourArea(cnt)
         if largest_area > 500:  # draw only larger than 500
             x, y, width, height = cv2.boundingRect(largest_contour)
@@ -1207,15 +1196,11 @@ while(1):
                         tilt = tilt + 1
                     else:
                         tilt = 125
-            
             send_ptval(pan, tilt)
             
         _pan = pan; _tilt = tilt;
         send_ptval(pan, tilt)
         cv2.rectangle(frame, (x, y), (x + width, y + height), COLOR, 2)
-    else:
-        tx_dat="led0\n"
-        sp.write(tx_dat.encode())
             #### time.sleep(0.05)   
     cv2.imshow("VideoFrame",frame)       # show original frame
     #cv2.imshow('Blue', res)           # show applied blue mask
@@ -1230,6 +1215,7 @@ while(1):
         
 cap.release()
 cv2.destroyAllWindows()
+
 
 ```
 
