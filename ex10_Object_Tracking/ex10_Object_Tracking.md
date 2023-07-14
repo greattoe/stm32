@@ -221,9 +221,11 @@ void reset_str(void) {
 
 ```c
 /* USER CODE BEGIN WHILE */
- 
   HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_2);
+  __HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_2, pos_pan);
+  __HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, pos_tilt);
+
   while (1)
   {
     /* USER CODE END WHILE */
@@ -236,6 +238,58 @@ void reset_str(void) {
 ```c
 /* USER CODE BEGIN 3 */
 
+	  HAL_UART_Receive(&huart2,str,12,100);
+
+	  //printf("%s\r\n",str); // 125 75
+	  char *pan = strtok(str, " ");
+	  char *tilt = strtok(NULL, " ");
+	  pos_pan = atoi(pan);
+	  __HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_2, pos_pan);
+	  HAL_Delay(10);
+	  pos_tilt = atoi(tilt);
+	  __HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, pos_tilt);
+	  HAL_Delay(10);
+	  //printf("pan = %d, tilt = %d\r\n", pos_pan, pos_tilt);
+
+
+
+
+	  char *ptr1_str = strstr(str, "pan");
+	  char *ptr2_str = strstr(str, "tilt");
+
+	  if(ptr1_str !=NULL )
+	  {
+		  digits = check_digit();
+		  if     (digits==3) {
+		  pos_pan = (str[3]-'0')*100 + (str[4]-'0')*10 +(str[5]-'0');
+		  }
+		  else if(digits==2) {
+			  pos_pan = (str[3]-'0')*10 + (str[4]-'0');
+		  }
+		  else if(digits==1) {
+			  pos_pan = str[3]-'0';
+		  }
+		  printf("pos_pan = %d\n",pos_pan);
+		  __HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_2, pos_pan);
+		  reset_str();
+	  }
+
+	  else if(ptr2_str !=NULL )
+	  {
+		  digits = check_digit();
+		  if     (digits==3){
+		  pos_tilt = (str[4]-'0')*100 + (str[5]-'0')*10 +(str[6]-'0');
+		  }
+		  else if(digits==2) {
+			  pos_tilt = (str[4]-'0')*10 + (str[5]-'0');
+		  }
+		  else if(digits==1) {
+			  pos_tilt = str[4]-'0';
+		  }
+		  printf("pos_tilt = %d\n",pos_tilt);
+		  __HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, pos_tilt);
+		  reset_str();
+	  }
   }
   /* USER CODE END 3 */
 ```
@@ -1331,6 +1385,7 @@ while(1):
         
 cap.release()
 cv2.destroyAllWindows()
+
 
 ```
 
