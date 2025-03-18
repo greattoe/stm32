@@ -46,27 +46,37 @@ TIM3에는 1초에 64,000,000 개의 클럭이 공급된다. 클럭 1개의 주�
 
 ![](.\img\tim3_mode_n_config2.png)
 
+TIM3 Mode and Configuration의 NVIC Setting 탭
 
-
-  Tim4에는 64(MHz) 클럭이 공급되는 것은 이미 확인 했다. 이 클럭은 Prescaler에 의해 분주되어 타이머에 공급된다. 64(MHz)는 64,000,000Hz 인데 Prescaler Parameter를 1280으로 설정한다면, 타이머에는 64,000,000 / 1280 = 50,000(Hz)의 클럭이 공급된다. 이 때 타이머는 카운터로 동작하며, 입력되는 클럭을 카운트한다. 1초에 50,000개의 클럭이 입력되므로, 클럭 1개를 카운트 하는 데에 1/50,000초가 소요된다. 이 때 Counter Periode Parameter로 1,000을 설정한다면 클럭을 1,000번 카운트 할 때 마다 타이머 인터럽트를 발생시키게 된다. 따라서 이 때의 인터럽트 주기는 1/50,000초 × 1,000 = 1,000/50,000=1/50=2/100 초, 즉 20(ms)가 되어 서보모터를 제어하기위한 주기 20(ms)인 PWM 파형을 발생시킬 준비가 되었다. 
-
-  이제 TIM3 타이머의 Parameter들을 설정해보자.
-
-  Prescaler값이 1280 이라는 것은 1280개의 클럭이 입력될 때마다 1개의 클럭을 출력한다는 의미이다. 카운트를 1부터 시작한다면 1280개의 클럭이 입력됬을 때의 카운트 값은 1280 이겠지만, 컴퓨터는 0부터 카운트를 시작하므로 1280개의 클럭이 입력됬을 때의 카운트 값은 1281이된다. 따라서 Prescaler는 `1280-1`로 설정하고, 같은 이유로 Counter Period는 `1000-1`로 설정한다.
-
-  ![](D:/Dropbox/myGit/stm32/ex12_HC-SR04/img/tim4_mode_n_config2.png)
+ 
 
   
 
   
 
-  
+  **HC-SR04 결선 및 GPIO 설정**
 
-  **TIM2 설정**
+HC-SR04 초음파 센서는 VCC, Trig, Echo, GND 4개의 핀을 가지고 있다. 다음 그림과 같이 결선 한다.
 
-  Pinout & Configuration탭의 Timers의 하위항목 중 Tim2를 선택한다.  Tim2 Mode and Configuration의 Mode에서 Clock Source를 Internal Clock으로, Channel1를 PWM Generation CH1로 변경 후, 화면 우측의 PINout 탭에서 PA0 핀을 클릭하여 TIM2_CH1이 나타나는 지 확인한다. 
+  ![](./img/wiring_HC-SR04.png)
 
-  ![](D:/Dropbox/myGit/stm32/ex12_HC-SR04/img/tim4_mode_n_config3.png)
+  센서의 Trig핀으로 10㎲ 펄스폭을 갖는 펄스를 공급하면 센서는 8개의 초음파를 발사한다. 이 때 센서의 Echo핀의 출력은 Low를 유지 하지만 발사한 초음파의 반사파가 수신되기 시작하면 Echo핀으로 High 신호를 출력한다. 이 High신호는 모든 반사파가 수신될 때까지 유지되다가 Low로 떨어진다. 즉 Echo 핀의 출력이 High를 유지한 시간이 초음파가 거리를 측정하고자 하는 대상까지 왕복하는데에 소요된 시간이라는 것이다. 음파의 속도는 340m/s이므로 속도 = 거리 / 시간 에서 속도와 시간을 알아낼 수 있으므로 거리를 구할 수 있다. 
+
+이제 센서의 Trig 핀이 연결된 A0와 Echo핀이 연결된 A1에 대한 GPIO 설정을 해 주어야 한다.
+
+- A0는 Trig핀에 Trig 펄스를 공급해 주어야 하므로 출력으로 설정하고,
+
+  ![](.\img\config_GPIO_A0.png)
+
+-  A1은 Echo핀의 출력이 언제 Low에서 High로 변하는 지, 또는 High에서 Low로 변하는 지 읽어내야 하므로 입력으로 설정해야 한다.
+
+  ![](D:\Dropbox\myGit\stm32\ex12_HC-SR04\img\config_GPIO_A1.png)
+
+  이제 GPIO Configuration을 확인하면 다음과 같다.
+
+![](./img/GPIO_config.png)
+
+![](./img/tim4_mode_n_config3.png)
 
   
 
