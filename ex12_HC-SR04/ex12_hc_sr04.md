@@ -10,7 +10,7 @@
 
 RCC 설정을 위해 다음 그림과 같이 Device Configuration 창에서 Pinout & Configuration 탭의 System Core 항목 중 RCC를 선택 후 우측의 RCC Mode and Configuration 의 Mode의 High Speed Clock(HSE) 및 Low Speed Clock(LSE) 모두를 Disable로 변경한다.
 
-![](D:/Dropbox/myGit/stm32/ex12_HC-SR04/img/system_core_rcc.png)
+![](./img/system_core_rcc.png)
 
 
 
@@ -20,7 +20,7 @@ RCC 설정을 위해 다음 그림과 같이 Device Configuration 창에서 Pino
 
   Pinout & Configuration탭의 Timers의 하위항목 중 Tim3를 선택한다.  Tim4 Mode and Configuration의 Mode에서 Internal Clock을 선택하면, 아래에 Parameter Setting 항목이 나타난다.
 
-  ![](D:/Dropbox/myGit/stm32/ex12_HC-SR04/img/tim3_mode_n_config1.png)
+  ![](./img/tim3_mode_n_config1.png)
 
 **1.3 타이머 클럭 확인**
 
@@ -75,20 +75,6 @@ HC-SR04 초음파 센서는 VCC, Trig, Echo, GND 4개의 핀을 가지고 있다
   이제 GPIO Configuration을 확인하면 다음과 같다.
 
 ![](./img/GPIO_config.png)
-
-![](./img/tim4_mode_n_config3.png)
-
-  
-
-  
-
-  ![](D:/Dropbox/myGit/stm32/ex12_HC-SR04/img/tim2_config1.png)
-
-
-
-Tim2의 Congiguration의 arameter Settings 탭의 Prescaler,  Counter Period 설정은 앞서 TIM4에서 계산한 설정값을 참조하여 Tim2 Mode and Configuration의 Mode에서 Parameter Settings 탭의 Prescaler 값을 `1280-1`로, Counter Mode를 `Up`으로, Counter Period 값을 `1000-1`로 설정한다.
-
-![](D:/Dropbox/myGit/stm32/ex12_HC-SR04/img/tim2_config2.png)
 
 **Code Generate**
 
