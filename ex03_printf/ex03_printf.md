@@ -783,7 +783,7 @@ PUTCHAR_PROTOTYPE
 
 지금 작성한 `uart2_printf`라이브러리를 **STM32CubeIDE**에서  테스트해보자. 이를 위한 STM32프로젝트를 생성한다. **Board Selector**에서 NUCLEO-F103RB를 찾아 선택한 후 `Next>`버튼을 클릭한다.
 
-`Project Name`으로 `TestPrintfLiB`를 입력 후 `<u>Finish`버튼을 클릭한다.
+`Project Name`으로 `TestPrintfLiB`를 입력 후 `Finish`버튼을 클릭한다.
 
 ![](./img/stm32_projrct_name_test_printf_lib.png)
 
@@ -860,7 +860,7 @@ USART2 NVIC관련 설정을 위해 Parameter Settings 탭 바로 위의 NVIC탭�
 
 `Run`메뉴의 `Run` 항목을 클릭하여 빌드 결과를 타겟보드에 업로드한다.
 
-`Putty`에서 `printf()`로 출력한 내용을 확인한다. NUCLEO보드의 `reset`버튼을 누를 때마다 `hello, printf()`문구가 `Putty`화면으로 출력되는 것을 확인한다. 
+`Putty`에서 `printf()`로 출력한 내용을 확인 후, NUCLEO보드의 `reset`버튼을 누를 때마다 `hello, printf()`문구가 `Putty`화면으로 출력되는 것을 확인한다. 
 
 ![](./img/hello_printf.png)
 
