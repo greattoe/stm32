@@ -56,7 +56,7 @@ Open Associated Perspective 대화창에서 Yes 버튼을 클릭하면 Device Co
 
 RCC 설정을 위해 다음 그림과 같이 Device Configuration 창에서 Pinout & Configuration 탭의 System Core 항목 중 RCC를 선택 후 우측의 RCC Mode snd Configuration 의 Mode를 High Speed Clock(HSE), Low Speed Clock(LSE) 모두 Disable로 변경한다.
 
-![](C:\Dropbox\myDoc\_강의자료\stm32\img\system_core_rcc.png)
+![](./img/device_config_tool.png)
 
 - **USART2 설정**
 
@@ -722,5 +722,146 @@ void assert_failed(uint8_t *file, uint32_t line)
 [**목차**](../README.md) 
 
 ![](./img/arduino.png)
+
+USART2를 이용한 printf() 사용을 위한 라이브러리`uart2_printf`를 작성해 보자.
+
+먼저`uart2_printf.h`파일을 다음과 같이 작성한다. 
+
+```c
+/*
+ * uart2_printf.h
+ *
+ * STM32 HAL library for using printf with USART2
+ */
+  
+#ifndef UART2_PRINTF_H
+#define UART2_PRINTF_H
+
+#include "stm32f1xx_hal.h"
+#include<stdio.h>
+
+#endif /* UART2_PRINTF_H */
+```
+
+이제 `uart2_printf.c`파일을 다음과 같이 작성한다.
+
+```c
+/*
+ * uart2_printf.c
+ *
+ * STM32 HAL library for using printf with USART2
+ */
+
+#include "uart2_printf.h"
+
+extern UART_HandleTypeDef huart2;
+
+#ifdef __GNUC__
+/* With GCC, small printf (option LD Linker->Libraries->Small printf
+   set to 'Yes') calls __io_putchar() */
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif /* __GNUC__ */
+
+/**
+  * @brief  Retargets the C library printf function to the USART.
+  * @param  None
+  * @retval None
+  */
+PUTCHAR_PROTOTYPE
+{
+  /* Place your implementation of fputc here */
+  /* e.g. write a character to the USART1 and Loop until the end of transmission */
+  if (ch == '\n')
+    HAL_UART_Transmit (&huart2, (uint8_t*) "\r", 1, 0xFFFF);
+  HAL_UART_Transmit (&huart2, (uint8_t*) &ch, 1, 0xFFFF);
+
+  return ch;
+}
+```
+
+지금 작성한 `uart2_printf`라이브러리를 **STM32CubeIDE**에서  테스트해보자. 이를 위한 STM32프로젝트를 생성한다. **Board Selector**에서 NUCLEO-F103RB를 찾아 선택한 후 `Next>`버튼을 클릭한다.
+
+`Project Name`으로 `TestPrintfLiB`를 입력 후 `<u>Finish`버튼을 클릭한다.
+
+![](./img/stm32_projrct_name_test_printf_lib.png)
+
+
+
+**RCC 설정**을 위해 다음 그림과 같이 Device Configuration 창에서 Pinout & Configuration 탭의 System Core 항목 중 RCC를 선택 후 우측의 RCC Mode snd Configuration 의 Mode를 High Speed Clock(HSE), Low Speed Clock(LSE) 모두 Disable로 변경한다.
+
+![](./img/rcc_config.png)
+
+**USART2** 설정을 위해 Pinout & Configuration 탭의 **Conectivity** 항목 중 **USART2**를 선택 후 우측의 USART Mode and Configuration 의 Mode를 Asynchronous로, Hardware Flow Control(RS232)을 Disable로 변경 후, USART2 Mode 항목 아래에 Configuration 항목의 Parameter Settings 탭을 선택하고 
+
+**Baud Rate** - 115200, **World Length** : 8bit, **Parity** : None, **Stop Bits** : 1, **Data Direction** : Recieve and Transmit 등의 설정값을 확인한다.
+
+![](./img/usart2_config.png)
+
+USART2 NVIC관련 설정을 위해 Parameter Settings 탭 바로 위의 NVIC탭을 선택하고, USART2 Global Interrupt항목의 Enabled를 체크한다.
+
+![](./img/usart2_nvic_config1.png)
+
+
+
+**NVIC** 설정을 위해 System Core 항목에서 NVIC을 선택하고, USART2 Global Interrupt 항목의 체크를 해제한다.
+
+![](./img/usart2_nvig_config3.png)
+
+이제 Project 메뉴에서 **Generate Code**항목을 클릭하여 설정 코드를 생성한다. 
+
+![](./img/generate_code1.png)
+
+이제 앞서 작성해둔 `uart2_printf.h` 파일은 STM32CubeIDEworkspace폴더의 Test_UART2_PRINTF/Core/Inc폴더에, `uart2_printf.c`파일은 STM32CubeIDEworkspace폴더의 Test_UART2_PRINTF/Core/Src폴더에 복사 후 다음 그림과 같이 프로젝트 탐색기에서 프로젝트 명에 우클릭하여 나타난 컨텍스트 메뉴에서`Refresh`를 클릭한다.
+
+![](./img/refresh_project.png)
+
+ `printf()`의 사용을 위해 `main.c`의 다음 코드를 찾아
+
+```c
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+
+/* USER CODE END Includes */
+```
+
+아래와 같이 변경한다.
+
+```c
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+#include "uart2_printf.h"
+/* USER CODE END Includes */
+```
+
+
+
+`main.c`의 다음코드를 
+
+```c
+
+  /* USER CODE BEGIN 2 */
+
+  /* USER CODE END 2 */
+```
+
+아래와 같이 변경한다.
+
+```c
+  /* USER CODE BEGIN 2 */
+  printf("Hello, printf()\n");
+  /* USER CODE END 2 */
+```
+
+
+
+변경내용 저장 후, `Project`메뉴에서 `Build Project`항목을 클릭하여 빌드한다.
+
+`Run`메뉴의 `Run` 항목을 클릭하여 빌드 결과를 타겟보드에 업로드한다.
+
+`Putty`에서 `printf()`로 출력한 내용을 확인한다. NUCLEO보드의 `reset`버튼을 누를 때마다 `hello, printf()`문구가 `Putty`화면으로 출력되는 것을 확인한다. 
+
+![](./img/hello_printf.png)
 
 [**목차**](../README.md) 
