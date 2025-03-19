@@ -18,7 +18,7 @@ STM32CubeIDE 환경에서 NUCLEO-F103RB 보드를 타겟으로 MCU가 제공하�
 >
 >5. [5. TIM_TimeBase(Timer 인터럽트)](./ex05_TIM_TimBase/ex05_TIM_TimBase.md) 
 >
->6. [6. ADC(Analog to Digital 컨버팅)](./ex06_ADC/ex06_ADC.md) 
+>6. [6. ADC(Analog to Digital 컨버팅)](./ex06_ADC_Temp/ex06_ADC_Temp.md) 
 >
 >7. [7. TIM_Servo(서보모터 제어)](./ex07_TIM_Servo/ex07_TIM_Servo.md) 
 >
