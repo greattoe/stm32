@@ -4,19 +4,18 @@ STM32CubeIDE 환경에서 NUCLEO-F103RB 보드를 타겟으로 MCU가 제공하�
 
 
 
+[0. Install STM32CubeIDE( 개발환경설정)](./ex0_STM32CubeIDE/ex0_STM32CubeIDE.md) 
 
->1. [1. Install STM32CubeIDE( 개발환경설정)](./ex0_STM32CubeIDE/ex0_STM32CubeIDE.md) 
->
->
->>1. [1. LED_Blink( GPIO 출력)](./ex01_LED_Blink/ex01_LED_BLINK.md) 
->
->2. [2. LED_Toggle( GPIO 입력)](./ex02_LED_Toggle/ex02_LED_Toggle.md) 
->
->3. [3. printf(시리얼 송신)](./ex03_printf/ex03_printf.md) 
->
->4. [4. EXTI(GPIO 입력에 의한 인터럽트)](./ex04_EXTI/ex04_EXTI.md) 
->
->5. [5. TIM_TimeBase(Timer 인터럽트)](./ex05_TIM_TimBase/ex05_TIM_TimBase.md) 
+[1. LED_Blink( GPIO 출력)](./ex01LED_Blink/ex01_LED_BLINK.md) 
+
+[2. LED_Toggle( GPIO 입력)](./ex02_LED_Toggle/ex02_LED_Toggle.md) 
+
+[3. EXTI(GPIO 입력에 의한 인터럽트)](./ex03_EXTI/ex03_EXTI.md) 
+
+[4. printf(시리얼 송신)](./ex03_printf/ex03_printf.md) 
+
+[5. TIM_TimeBase(Timer 인터럽트)](./ex05_TIM_TimBase/ex05_TIM_TimBase.md) 
+
 >
 >6. [6. ADC(Analog to Digital 컨버팅)](./ex06_ADC_Temp/ex06_ADC_Temp.md) 
 >
@@ -36,7 +35,7 @@ STM32CubeIDE 환경에서 NUCLEO-F103RB 보드를 타겟으로 MCU가 제공하�
 >
 >13. 
 >
->14. [11. HC-SR04(초음파 센서를 이용한 거리 측정)](.\ex12_HC-SR04/ex12_hc_sr04.md)
+>14. [11. HC-SR04(초음파 센서를 이용한 거리 측정)](.\HC-SR04/ex12_hc_sr04.md)
 >
 >
 >

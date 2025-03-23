@@ -1,6 +1,6 @@
 ### LED_Toggle
 
-GPIO 입력에 의한 LED On/Off 토글 구현
+GPIO 입력에 의한 LED ON/OFF 토글 구현
 
 #### 개발환경
 
@@ -18,7 +18,7 @@ GPIO 입력에 의한 LED On/Off 토글 구현
 
 **STM32CubeIDE** 실행 후, 아래와 같이 File - New - STM32 Project 선택 
 
-![](.\img\stm32cube_ide_new_project.png)
+![](./img/stm32cube_ide_new_project.png)
 
 
 
@@ -50,35 +50,37 @@ Open Associated Perspective 대화창에서 Yes 버튼을 클릭하면 Device Co
 
 
 
-#### Device Configuration Tool
+#### Device Configuration Tool 설정
+
+가장 먼저 설정할 **`peripheral`**은 **RCC**(Reset & Clock Control)이다.
+
+**NUCLEO-F103RB** 에서 사용가능한 클럭소스는 크게 내부클럭, 외부클럭이 있고, 외부클럭은 ST-Link의 8MHz 크리스탈 출력을 bypass시켜 사용하는 방법과 아래 그림에 표시된 X3 위치에 8MHz 크리스털을 납땜하여 그 출력을 클럭으로 사용하는 방법이 있다. ![](./img/figure_nucleo_f103rb_cutting_edge_x1_x3.png)
+
+NUCLEO F103RB 보드는 위 그림의 적색 점선으로 표시한 Cutting Edge를 경계로 잘라서 2개의 보드로 사용할 수 있는데, 위쪽 보드는 ST-Link ISP( In-Circuit Programmer)로 독립적으로사용할 수 있다.
+
+##### RCC 설정
+
+앞으로 모든 실습은 내부내부 클럭(STM32F103RB MCU 내부의 RC클럭 발진회로)사용을 기준으로 진행한다.
+
+클럭 소스로 내부RC 클럭 발진회로를 선택하기위한 RCC 설정을 위해 다음 그림과 같이 Device Configuration 창에서 Pinout & Configuration 탭의 System Core 항목 중 RCC를 선택 후 우측의 RCC Mode and Configuration 의 Mode의 High Speed Clock(HSE), Low Speed Clock(LSE) 모두 Disable로 변경한다.
+
+![](D:/Dropbox/myGit/stm32/_common/img/system_core_rcc.png)
+
+Clock Configuration 탭에서 SYS_CLK이 64(MHz)로 설정되었는 지 확인한다.
+
+![](./img/clock_config.png)
 
 
-
-![](./img/device_config_tool.png)
-
-- **RCC 설정**
-
-RCC 설정을 위해 다음 그림과 같이 Device Configuration 창에서 Pinout & Configuration 탭의 System Core 항목 중 RCC를 선택 후 우측의 RCC Mode snd Configuration 의 Mode를 High Speed Clock(HSE), Low Speed Clock(LSE) 모두 Disable로 변경한다.
-
-![](C:\Dropbox\myDoc\_강의자료\stm32\img\system_core_rcc.png)
 
 - **GPIO 설정**
 
   GPIO 설정을 위해 다음 그림과 같이 Device Configuration 창에서 Pinou 탭의 CPU Pin 중 PA5를 GPIO_OUTPUT로 변경후, Pinout & Configuration 탭의 PA5 Configuration의 GPIO Mode가 Output Push Pull인지 확인한다.
 
-  
-  
-  ![](./img/gpio_config.png)
+  ![](./img/gpio_pa5_config.png)
 
 GPIO 설정을 위해 다음 그림과 같이 Device Configuration 창에서 Pinout 탭의 CPU Pin 중 PC13을 GPIO_INPUT로 변경후, Pinout & Configuration 탭의 PC13 Configuration의 GPIO Mode가 INput Mode인지 확인 후, GPIO Pull-up/Pull-down을 Pull-up으로 설정한다.
 
-![](C:\Dropbox\myDoc\_강의자료\stm32\02_LED_Toggle\img\gpio_pc13_config.png)
-
-Clock Configuration 탭에서 HCLK가 64(MHz)로 설정되었는 지 확인한다.
-
-![](./img/clock_config.png)
-
-
+![](./img/gpio_pc13_config.png)
 
 
 
@@ -342,9 +344,28 @@ void assert_failed(uint8_t *file, uint32_t line)
 
 ```
 
+`main.c`의 다음 코드를
+
+```c
+/* USER CODE BEGIN PD */
+
+/* USER CODE END PD */
+```
 
 
-44 ~ 46행의 다음 코드를
+
+아래와 같이 수정한다. 
+
+```c
+/* USER CODE BEGIN PD */
+#define ON  0
+#define OFF 1
+/* USER CODE END PD */
+```
+
+
+
+`main.c`의 다음 코드를
 
 ```c
 /* USER CODE BEGIN PV */
@@ -361,10 +382,10 @@ int led_state  = 0;
 /* USER CODE END PV */
 ```
 
-95 ~ 98행의 다음 코드를
+`main.c`의 다음 코드를
 
 ```c
-USER CODE BEGIN WHILE */
+/*USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
@@ -383,7 +404,6 @@ USER CODE BEGIN WHILE */
 			  led_state = led_state^1;
 			  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, led_state);
 		  }
-	  }
 
     /* USER CODE END WHILE */
 ```
@@ -497,7 +517,6 @@ int main(void)
 			  led_state = led_state^1;
 			  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, led_state);
 		  }
-	  }
 
     /* USER CODE END WHILE */
 
@@ -654,8 +673,8 @@ Project 메뉴의 Build Project를 선택하여 빌드한다.
 
 ![](./img/build_result.png)
 
-에러없이 빌드되었으면, RUN 메뉴에서 RUN 항목을 선택하여 실행한다. 
+에러없이 빌드되었으면, RUN 메뉴에서 RUN 항목을 클릭하여 빌드결과를 타겟보드에 업로드한다. 
 
-타겟보드의 녹색 LED가 0.5초 간격으로 점멸하는 것을 확인한다.
+타겟보드의 녹색 LED가 파란색 Push Button SW를 누를 때 마다 점등과 소등상태가 토글되는 것을 확인한다. 한 번 SW를 누를 때 토글이 여러 번 발생하면 `debounce_delay = 160;`코드를 `debounce_delay = 180;` 또는 `debounce_delay = 200;` 으로 변경해 본다. 
 
 [**목차**](../README.md) 
