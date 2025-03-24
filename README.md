@@ -12,12 +12,16 @@ STM32CubeIDE 환경에서 NUCLEO-F103RB 보드를 타겟으로 MCU가 제공하�
 
 [3. EXTI(GPIO 입력에 의한 인터럽트)](./ex03_EXTI/ex03_EXTI.md) 
 
-[4. printf(시리얼 송신)](./ex03_printf/ex03_printf.md) 
+[4. printf(USART2를 이용한 printf()구현)](./ex04_printf/ex04_printf.md) 
 
-[5. TIM_TimeBase(Timer 인터럽트)](./ex05_TIM_TimBase/ex05_TIM_TimBase.md) 
+[5. ADC_Temp(Analog to Digital 컨버팅)](./ex05_ADC_Temp/ex05_ADC_Temp.md) 
+
+[6. ADC_2CH(Analog to Digital 컨버팅 2Channel)](./ex06_ADC_2CH/ex06_ADC_2CH.md) 
+
+[7. TIM_TimeBase(Timer 인터럽트)](./ex07_TIM_TimBase/ex07_TIM_TimBase.md) 
 
 >
->6. [6. ADC(Analog to Digital 컨버팅)](./ex06_ADC_Temp/ex06_ADC_Temp.md) 
+>
 >
 >7. [7. TIM_Servo(서보모터 제어)](./ex07_TIM_Servo/ex07_TIM_Servo.md) 
 >

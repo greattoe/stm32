@@ -269,8 +269,37 @@ PUTCHAR_PROTOTYPE
 `main.c`의 다음코드를 
 
 ```c
-/* USER CODE BEGIN 2 */
+/* USER CODE BEGIN PV */
 
+/* USER CODE END PV */
+```
+
+
+
+다음과 같이 수정한다.
+
+```c
+/* USER CODE BEGIN PV */
+const float AVG_SLOPE = 4.3E-03;      // slope (gradient) of temperature line function
+const float V25 = 1.43;               // sensor's voltage at 25°C [V]
+const float ADC_TO_VOLT = 3.3 / 4096; // conversion coefficient of digital value to volt
+                                      // when using 3.3V ref. voltage at 12-bit resolution
+/* USER CODE END PV */
+```
+
+
+
+
+
+
+
+
+
+`main.c`의 다음코드를 
+
+```c
+/* USER CODE BEGIN 2 */
+  }
   /* USER CODE END 2 */
 ```
 
@@ -280,12 +309,15 @@ PUTCHAR_PROTOTYPE
 
 ```c
 /* USER CODE BEGIN 2 */
-
-  /* Start calibration */
-      if (HAL_ADCEx_Calibration_Start (&hadc1) != HAL_OK)
-      {
-          Error_Handler ();
-      }
+/* Start calibration */
+  if (HAL_ADCEx_Calibration_Start (&hadc1) != HAL_OK)
+  {
+      Error_Handler ();
+  }
+  if (HAL_ADC_Start (&hadc1) != HAL_OK)
+  {
+    Error_Handler ();
+  }
   /* USER CODE END 2 */
 ```
 
@@ -295,6 +327,10 @@ PUTCHAR_PROTOTYPE
 
 ```c
  /* USER CODE BEGIN WHILE */
+  uint16_t adc1;
+  float vSense; // sensor's output voltage [V]
+  float temp;   // sensor's temperature [°C]
+
   while (1)
   {
 	  if (HAL_ADC_Start (&hadc1) != HAL_OK)
@@ -313,19 +349,22 @@ PUTCHAR_PROTOTYPE
  /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if (HAL_ADC_Start (&hadc1) != HAL_OK)
-	  {
-		  Error_Handler ();
-	  }
-	  HAL_ADC_PollForConversion(&hadc1,100);
-	  int adc_temp =  HAL_ADC_GetValue (&hadc1);
-	  HAL_ADC_PollForConversion(&hadc1,100);
-	  int adc_VR =  HAL_ADC_GetValue (&hadc1);
+      HAL_ADC_PollForConversion (&hadc1, 100);
+      adc1 = HAL_ADC_GetValue (&hadc1);
 
-	  printf("adc_VR = %d,\tadc_temp = %d.\n", adc_VR, adc_temp);
-	  HAL_Delay(500);
-
-	  HAL_ADC_Stop(&hadc1);
+      /*
+       * Reference Manual & Datasheet
+       *
+       * Temperature (in °C) = {(V25 - VSENSE) / Avg_Slope} + 25.
+       * Where,
+       * V25 = VSENSE value for 25°C and
+       * Avg_Slope = Average Slope for curve between Temperature vs. VSENSE
+       * (given in mV/°C or uV/°C)
+       */
+      vSense = adc1 * ADC_TO_VOLT;
+      temp = (V25 - vSense) / AVG_SLOPE + 25.0;
+      printf ("adc_result = %d, temp = %.2f(°C) \n", adc1, temp);
+      HAL_Delay(1000);
     /* USER CODE END WHILE */
 ```
 
