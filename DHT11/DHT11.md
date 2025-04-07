@@ -1,6 +1,6 @@
-### 주제목
+### TIM1을 이용한 1us Delay 구현
 
-실습하려는 기능 요약
+타이머를 이용한 1(㎲) 딜레이 구현
 
 #### 개발환경
 
@@ -68,27 +68,23 @@ Clock Configuration 탭에서 SYSCLK이 64(MHz)로 설정되었는 지 확인한
 
 ![](./img/clock_config.png)
 
-##### USART2 설정
+##### GPIO 설정 
 
-RCC 다음에 설정할  **`peripheral`**은 **USART2**(Universal Synchronous ASynchronous RecieverReceiver/Transmitter)이다. **`USART2`**를 이용한 **`printf()`**함수를 사용할 수 있도록 하기위해 USART2 장치를 설정해보자.  프로젝트 생성시 default periperal 설정을 적용했기 때문에 따로 변경할 내용은 없고, 기본 설정을 확인만 하면 된다. 
+PB2 핀으로 10(㎲)동안 HIGH 신호를,  10(㎲)동안 LOW 신호를 교대로 출력하고, 이 출력을 오실로 스코프로 측정하여 `delay_us()`함수의 동작을 확인하기 위해 PB2 핀을 출력으로 설정 한다.
 
-- NUCLEO-F103RB 타겟보드는 3개의 USART(USART1, USART2, USART3)가 지원된다. 그 중 USB 포트에 바로 연결된 장치가 USART2이므로 USART2 장치를 표준 출력장치로 설정하여 printf() 함수로 출력한 내용이 시리얼로 출력되도록 USART2를 설정한다. 먼저 Device Configuration 창에서 Pinout & Configuration 탭의 Conectivity 항목 중 USART2를 선택 후 우측의 USART Mode snd Configuration 의 Mode가 Asynchronous인지, Hardware Flow Control(RS232)이 Disable로 설정되어 있는 지 확인한다. 
-
-  ![](./img/usart2_mode_config.png)
+![](./img/config_PB2.png)
 
 
 
-USART2  Parameter Settings
+##### TIM1 설정
 
-앞서 설정한 USART2 Mode 항목 아래에 Configuration 항목의 Parameter Settings 탭을 선택하고 
+Clock Source를 Internal Clock으로 설정하여 타이머를 활성화 시킨다.
 
-**Baud Rate** - 115200, **World Length** : 8bit, **Parity** : None, **Stop Bits** : 1, **Data Direction** : Recieve and Transmit 등의 설정값들을 확인한다.
+프리스케일러를 64로 설정하면 시스템클럭 64MHz를 64로 나눈 1MHz(1,000,000Hz)클럭이 타이머 클럭으로 공급된다. 타이머가 이 클럭을 1개 카운트 하는데 걸리는 시간은 1/1,000,000초, 즉 1(㎲)이다. 이를 이용하면`delay_us()`를 구현할 수 있다. 따라서 사용할 타이머의 prescaler값은 64-1, Counter Period는 16비트로 표현가능한 최대값인 65536-1로 설정한다.
 
-![](./img/usart2_ParameterSettings.png)
+![](./img/config_TIM1.png)
 
 
-
-USART2를 이용한 `printf()`사용을 위해 필요한 설정 작업은 여기까지이다. 남은 작업은  지금까지의 설정을 반영한 코드 생성 후, 생성된 코드를 편집하는 작업이다.
 
 #####  Generate Code
 
@@ -143,6 +139,8 @@ Open Associated Perspective 대화창에서 Yes 버튼을 클릭한다.
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+TIM_HandleTypeDef htim1;
+
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
@@ -153,6 +151,7 @@ UART_HandleTypeDef huart2;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -192,14 +191,16 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
-
+    
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -243,6 +244,52 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief TIM1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM1_Init(void)
+{
+
+  /* USER CODE BEGIN TIM1_Init 0 */
+
+  /* USER CODE END TIM1_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM1_Init 1 */
+
+  /* USER CODE END TIM1_Init 1 */
+  htim1.Instance = TIM1;
+  htim1.Init.Prescaler = 64-1;
+  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim1.Init.Period = 65536-1;
+  htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim1.Init.RepetitionCounter = 0;
+  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM1_Init 2 */
+
+  /* USER CODE END TIM1_Init 2 */
+
 }
 
 /**
@@ -299,6 +346,9 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);
+
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
@@ -311,6 +361,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
@@ -361,95 +418,98 @@ void assert_failed(uint8_t *file, uint32_t line)
 
 
 
-##### `printf()`라이브러리 작성 및 현재 프로젝트에 반영
+**`main.c` 편집**
 
-USART2를 이용한 `printf()` 사용을 위한 사용자 라이브러리 `uart2_printf.h`파일과 `uart2_printf.c`파일을 각각 STM32 Cube IDE의 워크스페이스의 작성 중인 프로젝트 폴더의 `Core/Inc` 폴더와 `Core/Src`폴더에 다음과같이 작성하여 각각 저장한다. 
-
-**`uart2_printf.h`**
+ `/main.c`의 다음 코드를 찾아,
 
 ```c
-/*
- * uart2_printf.h
- *
- * STM32 HAL library for using printf with USART2
- */
-  
-#ifndef UART2_PRINTF_H
-#define UART2_PRINTF_H
+/* USER CODE BEGIN PFP */
 
-#include "stm32f1xx_hal.h"
-#include<stdio.h>
-
-#endif /* UART2_PRINTF_H */
+/* USER CODE END PFP */
 ```
 
 
 
-**`uart2_printf.c`**
+`delay_us()` 선언을 위해 아래와 같이 프로토타입을 기재한다.
 
 ```c
-/*
- * uart2_printf.c
- *
- * STM32 HAL library for using printf with USART2
- */
+/* USER CODE BEGIN PFP */
+void delay_us(uint16_t us);
+/* USER CODE END PFP */
+```
 
-#include "uart2_printf.h"
 
-extern UART_HandleTypeDef huart2;
 
-#ifdef __GNUC__
-/* With GCC, small printf (option LD Linker->Libraries->Small printf
-   set to 'Yes') calls __io_putchar() */
-#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
-#else
-#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
-#endif /* __GNUC__ */
+ `/main.c`의 다음 코드를 찾아,
 
-/**
-  * @brief  Retargets the C library printf function to the USART.
-  * @param  None
-  * @retval None
-  */
-PUTCHAR_PROTOTYPE
+```c
+/* USER CODE BEGIN 2 */
+
+  /* USER CODE END 2 */
+```
+
+
+
+타이머를 구동시키기 위해 아래와 같이 변경한다.
+
+```c
+/* USER CODE BEGIN 2 */
+  HAL_TIM_Base_Start(&htim1);
+  /* USER CODE END 2 */
+```
+
+
+
+ `/main.c`의 다음 코드를 찾아,
+
+```c
+/* USER CODE BEGIN WHILE */
+  while (1)
+  {
+      
+    /* USER CODE END WHILE */
+```
+
+
+
+PB2 핀으로 20(㎲)주기의 구형파 출력을 위해 아래와 같이 변경한다.
+
+```c
+/* USER CODE BEGIN WHILE */
+  while (1)
+  {
+     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, 1);
+	 delay_us(10);
+	 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, 0);
+	 delay_us(10); 
+    /* USER CODE END WHILE */
+```
+
+
+
+ `/main.c`의 다음 코드를 찾아,
+
+```c
+/* USER CODE BEGIN 4 */
+
+/* USER CODE END 4 */
+```
+
+
+
+다음과 같이`delay_us()`를 정의한다. 
+
+```c
+/* USER CODE BEGIN 4 */
+void delay_us(uint16_t us)
 {
-  /* Place your implementation of fputc here */
-  /* e.g. write a character to the USART1 and Loop until the end of transmission */
-  if (ch == '\n')
-    HAL_UART_Transmit (&huart2, (uint8_t*) "\r", 1, 0xFFFF);
-  HAL_UART_Transmit (&huart2, (uint8_t*) &ch, 1, 0xFFFF);
-
-  return ch;
+	__HAL_TIM_SET_COUNTER(&htim1, 0);              // initislize timer to 0
+	while((__HAL_TIM_GET_COUNTER(&htim1))<us);   // wait until count us
 }
+/* USER CODE END 4 */
 ```
 
 
-
-##### Refresh Project
-
-추가된 라이브러리를 작성 중인 프로젝트에 반영하기 위해다음 그림과 같이 프로젝트 탐색기에서 프로젝트 명에 우클릭하여 나타난 컨텍스트 메뉴에서`Refresh`를 클릭한다.
-
-![](./img/refresh_project.png)
-
- `printf()`의 사용을 위해 `[Project Name]/Core/Src/main.c`의 다음 코드를 찾아
-
-```c
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-```
-
-아래와 같이 변경한다.
-
-```c
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
-#include "uart2_printf.h"
-/* USER CODE END Includes */
-```
-
-이제 `main()`안에서 `printf()`를 호출할 수 있다.(정확히는  `main()`의 "`/* USER CODE BEGIN 2 */`"행 이 후 부터 사용 가능 하다. 
 
 
 
@@ -479,7 +539,7 @@ PUTCHAR_PROTOTYPE
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "uart2_printf.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -498,6 +558,8 @@ PUTCHAR_PROTOTYPE
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+TIM_HandleTypeDef htim1;
+
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
@@ -508,8 +570,9 @@ UART_HandleTypeDef huart2;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
-
+void delay_us(uint16_t us);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -547,14 +610,19 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
-
+  HAL_TIM_Base_Start(&htim1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, 1);
+	  delay_us(10);
+	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, 0);
+	  delay_us(10);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -598,6 +666,52 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief TIM1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM1_Init(void)
+{
+
+  /* USER CODE BEGIN TIM1_Init 0 */
+
+  /* USER CODE END TIM1_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM1_Init 1 */
+
+  /* USER CODE END TIM1_Init 1 */
+  htim1.Instance = TIM1;
+  htim1.Init.Prescaler = 64-1;
+  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim1.Init.Period = 65536-1;
+  htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim1.Init.RepetitionCounter = 0;
+  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM1_Init 2 */
+
+  /* USER CODE END TIM1_Init 2 */
+
 }
 
 /**
@@ -654,6 +768,9 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);
+
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
@@ -667,6 +784,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : PB2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
@@ -677,7 +801,11 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void delay_us(uint16_t us)
+{
+	__HAL_TIM_SET_COUNTER(&htim1, 0);              // initislize timer to 0
+	while((__HAL_TIM_GET_COUNTER(&htim1))<us);   // wait until time
+}
 /* USER CODE END 4 */
 
 /**
@@ -717,158 +845,17 @@ void assert_failed(uint8_t *file, uint32_t line)
 
 
 
-##### `main.c` 편집
-
-자동 생성된 `main.c`의 내용을 구현하려는 기능에 부합하도록 수정 편집 한다. `main.c`편집 시에는 사용자 코드를 `/* BEGIN */` 과 `/* END */`와 같은 형태의 주석 사이에 작성한다. 그렇게 해야, `.ioc`파일 변경 후, 변경 사항이 반영된 코드 생성 시(`Project` - `Generate Code` 실행 시) 작성한 코드가 손실되는 것을 막을 수 있다.
-
-**①`/* Private includes */`**
-
-`/* USER CODE BEGIN Includes */` 와 `/* USER CODE END Includes */`사이에는 `main.h`외 추가로 include할 헤더파일을 적는다. 
-
-```c
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-```
-
-
-
-**②`/* Private typedef */`**
-
-`/* USER CODE BEGIN PTD */` 와 `/* USER CODE END IPTD */`사이에는구조체 등 사용자 정의 변수 Type을 적는다. 
-
-```c
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-```
-
-
-
-**③`/* Private define */`**
-
-`/* USER CODE BEGIN PD */` 와 `/* USER CODE BEGIN PD */`사이에는 필요한 `#define`을 작성한다. 
-
-```c
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-
-/* USER CODE END PD */
-```
-
-
-
-**④`/* Private macro */`**
-
-`/* USER CODE BEGIN PM */` 와 `/* USER CODE END PM */` 사이에는 사용자 정의 매크로를 작성한다. 
-
-```c
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-```
-
-
-
-**⑤`/* Private variables */`**
-
-`/* USER CODE BEGIN PV */` 와 `/* USER CODE BEGIN PV */` 사이에는 필요한 변수를 정의한다.
-
-```c
-/* Private variables ---------------------------------------------------------*/
-/* USER CODE BEGIN PV */
-
-/* USER CODE END PV */
-```
-
-
-
-**⑥`/* Private user code */`**
-
-`/* /* USER CODE BEGIN 0 */` 와 ` /* USER CODE END 0 */` 사이에는 `main()`에 포함되지 앟는 코드를 작성한다.
-
-```c
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
-```
-
-
-
-**⑦`/* USER CODE BEGIN 1 */`**
-
-`/* USER CODE BEGIN 1 */` 과 ` /* USER CODE END 1 */` 사이에는 `main()`에 포함되지만`while(1)`에서 반복되지 않고 1회만 구동될 코드(단, Peripheral 설정과 관련없는 코드)를 작성한다.
-
-```c
-/* USER CODE BEGIN 1 */
-
- /* USER CODE END 1 */
-```
-
-
-
-**⑧`/* USER CODE BEGIN 2 */`**
-
-`/* USER CODE BEGIN 2 */` 과 ` /* USER CODE END 2 */` 사이에는 
-
-`/* /* USER CODE BEGIN 1 */` 과 ` /* USER CODE END 1 */`사이에 적지않은 `main()`에 포함되지만`while(1)`에서 반복되지 않고 1회만 구동될 코드를 작성한다.
-
-```c
-/* USER CODE BEGIN 2 */
-
- /* USER CODE END 2*/
-```
-
-
-
-**⑨`/* USER CODE BEGIN WHILE */`**
-
-```c
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-```
-
-과 `/* USER CODE END WHILE */` 사이에는 `main()`에 작성할 내용 중 `while(1)`에 의해 무한 반복될 내용을 작성한다. 
-
-
-
-```c
-/* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  { 
-      
-    /* USER CODE END WHILE */
-```
-
-
-
-**⑩`/* USER CODE BEGIN 4 */`**
-
-`/* USER CODE BEGIN 4 */` 와 `/* USER CODE END 4 */` 사이의 위치는 `main()`외부이다. ISR(Interrupt Service Routine)이나 사용자 정의 함수를 정의하는 위치로 사용하기에 적합하다. 
-
-```c
- /* USER CODE BEGIN 4 */
- 
-  /* USER CODE END 4 */
-```
-
-
-
-
-
-든 코드의 작성이 완료되면 Project 메뉴의 Build Project 항목을 클릭하여 빌드한다.
+모든 코드의 편집이 완료되면 Project 메뉴의 Build Project 항목을 클릭하여 빌드한다.
 
 ![](./img/build_result.png)
 
 ##### 구동 및 테스트
 
-에러없이 빌드되었으면, RUN 메뉴에서 RUN 항목을 선택하여 빌드 결과를 타겟보드(NUCLEO-F103RB)에 업로드 후, 구현한 기능이 정상 작동하는 지 확인한다. 
+에러없이 빌드되었으면, RUN 메뉴에서 RUN 항목을 선택하여 빌드 결과를 타겟보드(NUCLEO-F103RB)에 업로드 후, 구현한 기능이 정상 작동하는 지 확인한다. 아래는 PB2 핀의 출력을 오실로스코프에서 측정한 결과이다.
+
+![](./img/test_1us_delay.png)
+
+10(㎲)동안 HIGH, 10(㎲)동안 LOW를 교대로 출력하므로 주기는 20(㎲)가 되어야 하지만 측정 결과는 22(㎲)이다. 10(㎲)마다 1(㎲)의 오차가 발생했다.
 
 
 
