@@ -2,6 +2,36 @@
 
 GPIO 출력 기능을 이용한 LED 제어 
 
+**사용한 HAL API**
+
+1. HAL_GPIO_WritePin(GPIOx, GPIO_Pin, PinState)
+
+GPIO출력 함수 GPIO**PA5**로 HIGH를 출력할 경우 다음과 같이 사용한다.
+
+```c
+HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, SET); // or
+HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1);
+```
+
+GPIO출력 함수 GPIO**PA5**로 LOW를 출력할 경우 다음과 같이 사용한다.
+
+```c
+HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, RESET); // or
+HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
+```
+
+
+
+2. HAL_Delay(Delay)
+
+***ms***단위의 시간 지연 함수1초 딜레이가 필요한 경우 다음과 같이 사용한다.
+
+```c
+HAL_Delay(1000);
+```
+
+
+
 #### 개발환경
 
 **OS** MS-Windows 10(64bit)

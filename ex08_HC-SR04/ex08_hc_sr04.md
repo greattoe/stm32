@@ -81,7 +81,9 @@ HC-SR04 초음파 센서는 VCC, Trig, Echo, GND 4개의 핀을 가지고 있다
 `Project` 메뉴의 `Generate Code`를 클릭
 
 
-![](D:/Dropbox/myGit/stm32/ex12_HC-SR04/img/generate_code.png)
+![](./img/generate_code.png)
+
+
 
 다음은 [**HC-SR04 데이터시트**](https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf) 의 거리측정 타이밍 다이어 그램이다. 
 
@@ -115,7 +117,7 @@ for(int i=0;i < delay;i++);
 
 ```
 
-아래는 오실로스코프로 측정하면서, 위 `delay_us()`함수의 `value`값을 조정한 결과 화면이다. `delay_us()`를 이용하여 10㎲ 동안 GPIO 핀으로 HIGH와 LOW를 반복 출력한 결과인데, 오실로 스코프 시간축 한칸이 10㎲로 조정되어있으므로  실제 10㎲보다는 조금 길지만 무시할 수 있을 만하다.(HC-SR04에 공급할 Trigger 펄스 발생용으로는 충분하다.) <img src="D:\Dropbox\myGit\stm32\ex12_HC-SR04\img\delay_us_10_OSC.png" style="zoom: 80%;" />
+아래는 오실로스코프로 측정하면서, 위 `delay_us()`함수의 `value`값을 조정한 결과 화면이다. `delay_us()`를 이용하여 10㎲ 동안 GPIO 핀으로 HIGH와 LOW를 반복 출력한 결과인데, 오실로 스코프 시간축 한칸이 10㎲로 조정되어있으므로  실제 10㎲보다는 조금 길지만 무시할 수 있을 만하다.(HC-SR04에 공급할 Trigger 펄스 발생용으로는 충분하다.) <img src="./img/delay_us_10_OSC.png" style="zoom: 80%;" />
 
 측정 결과를 `printf()`로 출력하기 위에 앞서 진행한 과정에서 작성한 `uart2_printf.h`와 `uart_printf.c파일들도 ` `Core/Inc` 폴더와 `Core/Src`폴더에 적절히 복사한다. 
 
@@ -123,7 +125,7 @@ STM32CubeIDE의 프로젝트 탐색기에서 HC-SR04 프로젝트에 우클릭�
 
 를 클릭한다. 
 
-![](D:\Dropbox\myGit\stm32\ex12_HC-SR04\img\refresh_project.png)
+![](./img/refresh_project.png)
 
 
 

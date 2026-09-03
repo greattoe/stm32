@@ -2,6 +2,36 @@
 
 GPIO 입력에 의한 LED ON/OFF 토글 구현
 
+**사용한 HAL API**
+
+1. HAL_GPIO_WritePin(GPIOx, GPIO_Pin, PinState)
+
+GPIO출력 함수 GPIO**PA5**로 HIGH를 출력할 경우 다음과 같이 사용한다.
+
+```c
+HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, SET); // or
+HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1);
+```
+
+GPIO출력 함수 GPIO**PA5**로 LOW를 출력할 경우 다음과 같이 사용한다.
+
+```c
+HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, RESET); // or
+HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
+```
+
+
+
+2. HAL_GPIO_ReadPin(GPIOx, GPIO_Pin)
+
+GPIO입력 함수 GPIO**PC13**으로  부터의 입력을 변수 ***temp***에 치환할 경우 다음과 같이 사용한다.
+
+```c
+uint8_t temp = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
+```
+
+
+
 #### 개발환경
 
 **OS** MS-Windows 10(64bit)
